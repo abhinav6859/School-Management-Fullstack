@@ -1,4 +1,10 @@
-const menuItems = [
+
+import { role } from "@/lib/data";
+import Image from "next/image";
+import Link from "next/link";
+
+
+ const menuItems = [
   {
     title: "MENU",
     items: [
@@ -112,3 +118,39 @@ const menuItems = [
     ],
   },
 ];
+
+const Menu = () => {
+  return (
+    <div className='mt-8'>
+      {menuItems.map((section) => (
+        <div key={section.title} className='mb-8'>
+          <h3 className='font-semibold text-gray-500 mb-4'>{section.title}</h3>
+          <div className='flex flex-col gap-2'>
+            {section.items.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className='flex items-center gap-4 p-2 hover:bg-gray-100 rounded-md'
+              >
+                <Image src={item.icon} alt={item.label} width={20} height={20} />
+                <span>{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      ))}
+
+    </div>
+  )
+}
+
+export default Menu
+
+
+
+
+
+
+
+
+
