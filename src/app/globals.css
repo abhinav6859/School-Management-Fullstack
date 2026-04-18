@@ -1,5 +1,104 @@
+/* ===============================
+   1. Tailwind Base
+================================ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ===============================
+   2. Design Tokens (Reusable)
+================================ */
+:root {
+  --calendar-bg: #f7fdff;
+  --event-blue: #e2f8ff;
+  --event-yellow: #fefce8;
+  --event-purple: #f2f1ff;
+  --event-pink: #fdf2fb;
+}
 
+/* ===============================
+   3. React Calendar (small calendar)
+================================ */
+.react-calendar {
+  @apply w-full border-none font-sans;
+}
+
+.react-calendar__navigation__label__labelText {
+  @apply font-semibold;
+}
+
+.react-calendar__tile--active {
+  background-color: #c3ebfa;
+  color: black;
+}
+
+/* ===============================
+   4. React Big Calendar (RBC)
+================================ */
+
+/* Toolbar */
+.rbc-toolbar {
+  @apply flex justify-between items-center px-4 py-2;
+}
+
+.rbc-btn-group:first-child {
+  display: none;
+}
+
+.rbc-toolbar-label {
+  @apply text-right px-5 font-medium;
+}
+
+.rbc-btn-group:last-child {
+  @apply text-sm;
+}
+
+.rbc-btn-group:last-child button {
+  @apply border-none bg-indigo-50 ml-1 rounded-md px-2 py-1;
+}
+
+.rbc-toolbar button.rbc-active {
+  @apply bg-indigo-100 shadow-none;
+}
+
+/* Layout */
+.rbc-time-view {
+  @apply border-gray-200;
+}
+
+.rbc-time-header {
+  display: none;
+}
+
+.rbc-time-content {
+  @apply border-none;
+}
+
+.rbc-time-gutter {
+  @apply text-xs;
+}
+
+.rbc-time-gutter .rbc-timeslot-group {
+  @apply px-5;
+}
+
+.rbc-timeslot-group {
+  background-color: var(--calendar-bg);
+}
+
+.rbc-day-slot {
+  @apply text-sm;
+}
+
+/* Events */
+.rbc-event {
+  @apply border-none text-black p-2 m-2 w-[98%] rounded-md;
+}
+
+/* ❌ REMOVE nth-child (bad practice) */
+/* ✅ Use custom event styling instead */
+
+/* Event label */
+.rbc-event-label {
+  @apply text-gray-500 mb-1 text-xs;
+}
