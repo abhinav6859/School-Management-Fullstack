@@ -917,6 +917,7 @@ export const announcementsData = [
 
 
 // YOU SHOULD CHANGE THE DATES OF THE EVENTS TO THE CURRENT DATE TO SEE THE EVENTS ON THE CALENDAR
+// type is optional and can be used to differentiate between different types of events (e.g., math, english, biology, etc.) and apply different styles to them on the calendar
 export const calendarEvents = [
   {
     title: "Math",
@@ -949,8 +950,8 @@ export const calendarEvents = [
   {
     title: "Chemistry",
     allDay: false,
-    start: new Date(2026, 3, 12, 13, 0),
-    end: new Date(2026, 3, 12, 13, 45),
+    start: new Date(2026, 3, 21, 13, 0),
+    end: new Date(2026, 3, 21, 13, 45),
     type: "chemistry",
   },
   {
@@ -963,81 +964,81 @@ export const calendarEvents = [
   {
     title: "English",
     allDay: false,
-    start: new Date(2026, 3, 13, 9, 0),
-    end: new Date(2026, 3, 13, 9, 45),
+    start: new Date(2026, 3, 20, 9, 0),
+    end: new Date(2026, 3, 20, 9, 45),
     type: "english",
   },
   {
     title: "Biology",
     allDay: false,
-    start: new Date(2026, 3, 13, 10, 0),
-    end: new Date(2026, 3, 13, 10, 45),
+    start: new Date(2026, 3, 19, 10, 0),
+    end: new Date(2026, 3, 19, 10, 45),
     type: "biology",
   },
   {
     title: "Physics",
     allDay: false,
-    start: new Date(2026, 3, 13, 11, 0),
-    end: new Date(2026, 3, 13, 11, 45),
+    start: new Date(2026, 3, 21, 11, 0),
+    end: new Date(2026, 3, 21, 11, 45),
     type: "physics",
   },
 
   {
     title: "History",
     allDay: false,
-    start: new Date(2026, 3, 13, 14, 0),
-    end: new Date(2026, 3, 13, 14, 45),
+    start: new Date(2026, 3, 21, 14, 0),
+    end: new Date(2026, 3, 21, 14, 45),
     type: "history",
   },
   {
     title: "Math",
     allDay: false,
-    start: new Date(2026, 3, 14, 8, 0),
-    end: new Date(2026, 3, 14, 8, 45),
+    start: new Date(2026, 3, 21, 8, 0),
+    end: new Date(2026, 3, 21, 8, 45),
     type: "math",
   },
   {
     title: "Biology",
     allDay: false,
-    start: new Date(2026, 3, 14, 10, 0),
-    end: new Date(2026, 3, 14, 10, 45),
+    start: new Date(2026, 3, 22, 10, 0),
+    end: new Date(2026, 3, 22, 10, 45),
     type: "biology",
   },
 
   {
     title: "Chemistry",
     allDay: false,
-    start: new Date(2026, 3, 14, 13, 0),
-    end: new Date(2026, 3, 14, 13, 45),
+    start: new Date(2026, 3, 23, 13, 0),
+    end: new Date(2026, 3, 23, 13, 45),
     type: "chemistry",
 
   },
   {
     title: "History",
     allDay: false,
-    start: new Date(2026, 3, 14, 14, 0),
-    end: new Date(2026, 3, 14, 14, 45),
+    start: new Date(2026, 3, 24, 14, 0),
+    end: new Date(2026, 3, 24, 14, 45),
     type: "history",
   },
   {
     title: "English",
     allDay: false,
-    start: new Date(2026, 3, 15, 9, 0),
-    end: new Date(2026, 3, 15, 9, 45),
+    start: new Date(2026, 3, 20, 8, 0),
+    end: new Date(2026, 3, 20, 8, 45),
     type: "english",
   },
   {
     title: "Biology",
     allDay: false,
-    start: new Date(2026, 3, 15, 10, 0),
-    end: new Date(2026, 3, 15, 10, 45),
+    start: new Date(2026, 3, 22, 9, 0),
+    end: new Date(2026, 3, 22, 9, 45),
     type: "biology",
   },
   {
     title: "Physics",
     allDay: false,
-    start: new Date(2026, 3, 15, 11, 0),
-    end: new Date(2026, 3, 15, 11, 45),
+    start: new Date(2026, 3, 23, 11, 0),
+    end: new Date(2026, 3, 23, 11, 45),
     type: "physics",
   },
 

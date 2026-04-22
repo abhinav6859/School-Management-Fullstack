@@ -15,38 +15,19 @@ const BigCalendar = () => {
     setView(selectedView);
   };
 
-
-  const eventColors: Record<string, string> = {
-  biology: "#f59e0b",
-  english: "#10b981",
-  chemistry: "#ef4444",
-  physics: "#3b82f6",
-  history: "#8b5cf6",
-  math: "#ec4899",
-};
-
-const eventStyleGetter = (event: any) => ({
-  style: {
-    backgroundColor: eventColors[event.type] || "#3174ad",
-    borderRadius: "8px",
-    color: "white",
-    border: "none",
-    padding: "4px",
-  },
-});
-
   return (
- <Calendar
-  localizer={localizer}
-  events={calendarEvents}
-  startAccessor="start"
-  endAccessor="end"
-  views={["work_week", "day"]}
-  view={view}
-  onView={handleOnChangeView}
-  eventPropGetter={eventStyleGetter}  // ✅ ADD THIS LINE
-  style={{ height: "98%" }}
-/>
+    <Calendar
+      localizer={localizer}
+      events={calendarEvents}
+      startAccessor="start"
+      endAccessor="end"
+      views={["work_week", "day"]}
+      view={view}
+      style={{ height: "98%" }}
+      onView={handleOnChangeView}
+      min={new Date(2025, 1, 0, 8, 0, 0)}
+      max={new Date(2025, 1, 0, 17, 0, 0)}
+    />
   );
 };
 

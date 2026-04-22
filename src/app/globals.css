@@ -1,104 +1,109 @@
-/* ===============================
-   1. Tailwind Base
-================================ */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* ===============================
-   2. Design Tokens (Reusable)
-================================ */
-:root {
-  --calendar-bg: #f7fdff;
-  --event-blue: #e2f8ff;
-  --event-yellow: #fefce8;
-  --event-purple: #f2f1ff;
-  --event-pink: #fdf2fb;
-}
-
-/* ===============================
-   3. React Calendar (small calendar)
-================================ */
 .react-calendar {
-  @apply w-full border-none font-sans;
+  width: 100% !important;
+  border: none !important;
+  font-family: "Inter", sans-serif !important;
 }
 
 .react-calendar__navigation__label__labelText {
-  @apply font-semibold;
+  font-weight: 600;
 }
 
 .react-calendar__tile--active {
-  background-color: #c3ebfa;
-  color: black;
-}
-
-/* ===============================
-   4. React Big Calendar (RBC)
-================================ */
-
-/* Toolbar */
-.rbc-toolbar {
-  @apply flex justify-between items-center px-4 py-2;
+  background-color: #c3ebfa !important;
+  color: black !important;
 }
 
 .rbc-btn-group:first-child {
-  display: none;
+  display: none !important;
 }
 
 .rbc-toolbar-label {
-  @apply text-right px-5 font-medium;
+  text-align: right !important;
+  padding: 0px 20px !important;
 }
 
 .rbc-btn-group:last-child {
-  @apply text-sm;
+  font-size: 13px !important;
 }
 
 .rbc-btn-group:last-child button {
-  @apply border-none bg-indigo-50 ml-1 rounded-md px-2 py-1;
+  border: none !important;
+  background-color: #f1f0ff !important;
+  margin-left: 2px !important;
 }
 
 .rbc-toolbar button.rbc-active {
-  @apply bg-indigo-100 shadow-none;
+  background-color: #dbdafe !important;
+  box-shadow: none !important;
 }
 
-/* Layout */
 .rbc-time-view {
-  @apply border-gray-200;
+  border-color: #eee !important;
 }
 
 .rbc-time-header {
-  display: none;
+  display: none !important;
 }
 
 .rbc-time-content {
-  @apply border-none;
+  border: none !important;
 }
 
-.rbc-time-gutter {
-  @apply text-xs;
+.rbc-time-gutter.rbc-time-column {
+  font-size: 12px !important;
 }
 
-.rbc-time-gutter .rbc-timeslot-group {
-  @apply px-5;
+.rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
+  padding: 0px 20px !important;
 }
 
 .rbc-timeslot-group {
-  background-color: var(--calendar-bg);
+  background-color: #f7fdff !important;
 }
 
 .rbc-day-slot {
-  @apply text-sm;
+  font-size: 14px !important;
 }
 
-/* Events */
 .rbc-event {
-  @apply border-none text-black p-2 m-2 w-[98%] rounded-md;
+  height: auto !important;
+  border: none !important;
+  color: black !important;
+  padding: 10px !important;
+  margin: 10px !important;
+  width: 99% !important;
 }
 
-/* ❌ REMOVE nth-child (bad practice) */
-/* ✅ Use custom event styling instead */
+.rbc-event:nth-child(1) {
+  background-color: #e2f8ff !important;
+}
+.rbc-event:nth-child(2) {
+  background-color: #fefce8 !important;
+}
+.rbc-event:nth-child(3) {
+  background-color: #f2f1ff !important;
+}
+.rbc-event:nth-child(4) {
+  background-color: #fdf2fb !important;
+}
+.rbc-event:nth-child(5) {
+  background-color: #e2f8ff !important;
+}
+.rbc-event:nth-child(6) {
+  background-color: #fefce8 !important;
+}
+.rbc-event:nth-child(7) {
+  background-color: #f2f1ff !important;
+}
+.rbc-event:nth-child(8) {
+  background-color: #fdf2fb !important;
+}
 
-/* Event label */
-.rbc-event-label {
-  @apply text-gray-500 mb-1 text-xs;
+.rbc-event-label{
+  color: gray !important;
+  margin-bottom: 5px;
 }
