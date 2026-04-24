@@ -2,6 +2,9 @@
 
 import { teachersData } from "@/lib/data";
 import Bigcalender from "@/components/BigCalender";
+import Performance from "@/components/Performance";
+import Announcement from "@/components/Announcements";
+
 
 type Teacher = {
   id: number;
@@ -108,7 +111,8 @@ const Page = ({ params }: { params: { id: string } }) => {
             Delete
           </button>
         </div>
-
+        <Performance />
+<Announcement />
       </div>
     </div>
   );
