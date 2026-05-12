@@ -158,17 +158,17 @@ const renderRow = (item: Teacher) => (
             </button>
 
             {/* ADD */}
-            {role === "admin" && (
-              <button
-             
-                aria-label="Add teacher"
-                title="Add Teacher"
-                className="w-9 h-9 flex items-center justify-center rounded-full bg-purple-500 hover:bg-purple-600 transition-all shadow-md"
-              >
-                <Image src="/plus.png" alt="Add" width={16} height={16} />
-              </button>
-              // <FormModal table="teacher" type="create"/>
-            )}
+          {role === "admin" && (
+            //   <button
+            // //  onClick={}
+            //     aria-label="Add teacher"
+            //     title="Add Teacher"
+            //     className="w-9 h-9 flex items-center justify-center rounded-full bg-purple-500 hover:bg-purple-600 transition-all shadow-md"
+            //   >
+            //     <Image src="/plus.png" alt="Add" width={16} height={16} />
+            //   </button>
+               <FormModal table="teacher" type="create"/>
+            )} 
           </div>
         </div>
       </div>
