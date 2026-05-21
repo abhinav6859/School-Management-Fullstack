@@ -5,20 +5,11 @@ import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import { role, teachersData } from "@/lib/data";
+import { Teacher } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-type Teacher = {
-  id: number;
-  name: string;
-  teacherId: string;
-  email?: string;
- photo: string;
-  subjects: string[];
-  classes: string[];
-  phone: string;
-  address: string;
-};
+
 
 const columns = [
   {
@@ -72,7 +63,7 @@ const renderRow = (item: Teacher) => (
   className="block"
 >
   <Image
-    src={item.photo || "/avatar.png"}
+    src={item.img || "/noAvatar.png"}
     alt={item.name}
     width={40}
     height={40}
