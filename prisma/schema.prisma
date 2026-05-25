@@ -17,6 +17,7 @@ model Admin {
 
 model Teacher {
   id                String       @id @default(cuid())
+  username String? @unique      // change reqired later
   firstName         String
   lastName          String
   email             String       @unique
@@ -40,6 +41,7 @@ model Teacher {
 
 model Student {
   id          String       @id @default(cuid())
+   username String? @unique      // change reqired later
   firstName   String
   lastName    String
   email       String?      @unique
@@ -62,6 +64,7 @@ model Student {
 
 model Parent {
   id        String    @id @default(cuid())
+  username String? @unique      // change reqired later
   firstName String
   lastName  String
   email     String    @unique

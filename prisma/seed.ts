@@ -90,6 +90,7 @@ async function main() {
         id: `teacher${i}`,
         firstName: `TFirstName${i}`,
         lastName: `TLastName${i}`,
+        username: `teacher${i}`,
         email: `teacher${i}@example.com`,
         phone: `100-200-300${i}`,
         address: `Teacher Address ${i}`,
@@ -126,6 +127,7 @@ async function main() {
     await prisma.parent.create({
       data: {
         id: `parent${i}`,
+        username: `parent${i}`,
         firstName: `PFirstName${i}`,
         lastName: `PLastName${i}`,
         email: `parent${i}@example.com`,
@@ -141,6 +143,7 @@ async function main() {
     await prisma.student.create({
       data: {
         id: `student${i}`,
+        username: `student${i}`,
         firstName: `SFirstName${i}`,
         lastName: `SLastName${i}`,
         email: `student${i}@example.com`,
