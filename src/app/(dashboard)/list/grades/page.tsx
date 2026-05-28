@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import GradeForm from "@/components/forms/GradeForm";
-import GradeList from "@/components/GradeList";
+import GradeList from "@/components/list/GradeList";
 
 export default function GradesPage() {
   const [refresh, setRefresh] = useState(0);

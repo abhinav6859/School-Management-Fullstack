@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import ParentForm from "@/components/forms/ParentForm";
-import ParentList from "@/components/ParentList";
+import ParentList from "@/components/list/ParentList";
 
 export default function ParentsPage() {
   const [refresh, setRefresh] = useState(0);

@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-interface Lesson {
+interface Subject {
+  id: number;
+  name: string;
+}
+
+interface ClassItem {
   id: number;
   name: string;
 }
@@ -13,41 +18,52 @@ interface Teacher {
   lastName: string;
 }
 
-export default function ExamForm({
-  onExamAdded,
+export default function LessonForm({
+  onLessonAdded,
 }: {
-  onExamAdded: () => void;
+  onLessonAdded: () => void;
 }) {
-  const [lessons, setLessons] =
-    useState<Lesson[]>([]);
+  const [subjects, setSubjects] =
+    useState<Subject[]>([]);
+
+  const [classes, setClasses] =
+    useState<ClassItem[]>([]);
 
   const [teachers, setTeachers] =
     useState<Teacher[]>([]);
 
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
+    day: "MONDAY",
     startTime: "",
     endTime: "",
-    lessonId: "",
+    subjectId: "",
+    classId: "",
     teacherId: "",
   });
 
   useEffect(() => {
-    fetchLessons();
+    fetchSubjects();
+    fetchClasses();
     fetchTeachers();
   }, []);
 
-  const fetchLessons = async () => {
-    const res = await fetch("/api/lessons");
-
+  const fetchSubjects = async () => {
+    const res = await fetch("/api/subjects");
     const data = await res.json();
 
-    setLessons(data);
+    setSubjects(data);
+  };
+
+  const fetchClasses = async () => {
+    const res = await fetch("/api/classes");
+    const data = await res.json();
+
+    setClasses(data);
   };
 
   const fetchTeachers = async () => {
     const res = await fetch("/api/teachers");
-
     const data = await res.json();
 
     setTeachers(data);
@@ -70,7 +86,7 @@ export default function ExamForm({
     e.preventDefault();
 
     try {
-      const res = await fetch("/api/exams", {
+      const res = await fetch("/api/lessons", {
         method: "POST",
 
         headers: {
@@ -82,17 +98,19 @@ export default function ExamForm({
       });
 
       if (res.ok) {
-        alert("Exam Added");
+        alert("Lesson Added");
 
         setFormData({
-          title: "",
+          name: "",
+          day: "MONDAY",
           startTime: "",
           endTime: "",
-          lessonId: "",
+          subjectId: "",
+          classId: "",
           teacherId: "",
         });
 
-        onExamAdded();
+        onLessonAdded();
       }
     } catch (error) {
       console.log(error);
@@ -105,18 +123,45 @@ export default function ExamForm({
       className="border p-5 rounded-lg"
     >
       <h2 className="text-2xl font-bold mb-4">
-        Add Exam
+        Add Lesson
       </h2>
 
       <input
         type="text"
-        name="title"
-        placeholder="Exam Title"
-        value={formData.title}
+        name="name"
+        placeholder="Lesson Name"
+        value={formData.name}
         onChange={handleChange}
         className="border p-2 w-full mb-4"
         required
       />
+
+      <select
+        name="day"
+        value={formData.day}
+        onChange={handleChange}
+        className="border p-2 w-full mb-4"
+      >
+        <option value="MONDAY">
+          MONDAY
+        </option>
+
+        <option value="TUESDAY">
+          TUESDAY
+        </option>
+
+        <option value="WEDNESDAY">
+          WEDNESDAY
+        </option>
+
+        <option value="THURSDAY">
+          THURSDAY
+        </option>
+
+        <option value="FRIDAY">
+          FRIDAY
+        </option>
+      </select>
 
       <input
         type="datetime-local"
@@ -137,22 +182,43 @@ export default function ExamForm({
       />
 
       <select
-        name="lessonId"
-        value={formData.lessonId}
+        name="subjectId"
+        value={formData.subjectId}
         onChange={handleChange}
         className="border p-2 w-full mb-4"
         required
       >
         <option value="">
-          Select Lesson
+          Select Subject
         </option>
 
-        {lessons.map((lesson) => (
+        {subjects.map((subject) => (
           <option
-            key={lesson.id}
-            value={lesson.id}
+            key={subject.id}
+            value={subject.id}
           >
-            {lesson.name}
+            {subject.name}
+          </option>
+        ))}
+      </select>
+
+      <select
+        name="classId"
+        value={formData.classId}
+        onChange={handleChange}
+        className="border p-2 w-full mb-4"
+        required
+      >
+        <option value="">
+          Select Class
+        </option>
+
+        {classes.map((cls) => (
+          <option
+            key={cls.id}
+            value={cls.id}
+          >
+            {cls.name}
           </option>
         ))}
       </select>
@@ -183,7 +249,7 @@ export default function ExamForm({
         type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded"
       >
-        Save Exam
+        Save Lesson
       </button>
     </form>
   );

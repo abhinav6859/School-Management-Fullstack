@@ -342,7 +342,7 @@
 import { useState } from "react";
 
 import StudentForm from "@/components/forms/StudentForm";
-import StudentList from "@/components/StudentList";
+import StudentList from "@/components/list/StudentList";
 
 export default function StudentsPage() {
   const [refresh, setRefresh] = useState(0);

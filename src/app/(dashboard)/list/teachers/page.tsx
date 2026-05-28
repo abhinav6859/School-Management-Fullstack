@@ -181,7 +181,7 @@
 
 import { useState } from "react";
 import TeacherForm from "@/components/forms/TeacherForm";
-import TeacherList from "@/components/TeacherList";
+import TeacherList from "@/components/list/TeacherList";
 
 export default function TeachersPage() {
   const [refresh, setRefresh] = useState(0);

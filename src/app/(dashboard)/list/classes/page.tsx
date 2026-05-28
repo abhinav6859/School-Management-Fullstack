@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import ClassForm from "@/components//forms/ClassForm";
-import ClassList from "@/components/ClassList";
+import ClassList from "@/components/list/ClassList";
 
 export default function ClassesPage() {
   const [refresh, setRefresh] = useState(0);
