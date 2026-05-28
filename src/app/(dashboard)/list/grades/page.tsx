@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 
-import ClassForm from "@/components//forms/ClassForm";
-import ClassList from "@/components/ClassList";
+import GradeForm from "@/components/forms/GradeForm";
+import GradeList from "@/components/GradeList";
 
-export default function ClassesPage() {
+export default function GradesPage() {
   const [refresh, setRefresh] = useState(0);
 
   return (
     <div className="max-w-5xl mx-auto p-10">
-      <ClassForm
-        onClassAdded={() =>
+      <GradeForm
+        onGradeAdded={() =>
           setRefresh((prev) => prev + 1)
         }
       />
 
-      <ClassList refresh={refresh} />
+      <GradeList refresh={refresh} />
     </div>
   );
 }

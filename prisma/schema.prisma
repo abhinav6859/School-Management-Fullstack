@@ -17,13 +17,15 @@ model Admin {
 
 model Teacher {
   id                String       @id @default(cuid())
-  username String? @unique      // change reqired later
+  username          String       @unique
+  img               String?
   firstName         String
   lastName          String
   email             String       @unique
   phone             String?
   address           String?
   gender            UserSex
+  classes           Class[]
   bloodType         String?
   birthday          DateTime?
   role              Role         @default(TEACHER)
@@ -41,7 +43,8 @@ model Teacher {
 
 model Student {
   id          String       @id @default(cuid())
-   username String? @unique      // change reqired later
+  username    String       @unique
+  img         String?
   firstName   String
   lastName    String
   email       String?      @unique
@@ -64,7 +67,7 @@ model Student {
 
 model Parent {
   id        String    @id @default(cuid())
-  username String? @unique      // change reqired later
+  username  String    @unique
   firstName String
   lastName  String
   email     String    @unique
@@ -93,6 +96,7 @@ model Class {
   events        Event[]
   lessons       Lesson[]
   students      Student[]
+  teachers      Teacher[]
 }
 
 model Subject {
