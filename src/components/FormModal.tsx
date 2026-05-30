@@ -18,7 +18,15 @@ const forms: Record<
   string,
   (type: "create" | "update", data?: any) => JSX.Element
 > = {
-  teacher: (type, data) => <TeacherForm type={type} data={data} />,
+ teacher: (type, data) => (
+  <TeacherForm
+    type={type}
+    data={data}
+    onTeacherAdded={() => {
+      window.location.reload();
+    }}
+  />
+),
   student: (type, data) => <StudentForm type={type} data={data} />,
 };
 
@@ -57,18 +65,45 @@ const FormModal = ({
 
   // ✅ Safe Form Renderer
   const renderForm = () => {
-    if (type === "delete" && id) {
-      return (
-        <form className="p-4 flex flex-col gap-4">
-          <span className="text-center font-medium">
-            All data will be lost. Are you sure you want to delete this {table}?
-          </span>
-          <button className="bg-red-700 text-white py-2 px-4 rounded-md w-max self-center">
-            Delete
-          </button>
-        </form>
-      );
-    }
+   if (type === "delete" && id) {
+  return (
+    <form
+      className="p-4 flex flex-col gap-4"
+      onSubmit={async (e) => {
+        e.preventDefault();
+
+        try {
+          const res = await fetch(`/api/teachers/${id}`, {
+            method: "DELETE",
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            alert("Teacher deleted successfully");
+            window.location.reload();
+          } else {
+            alert(data.message || "Failed to delete teacher");
+          }
+        } catch (error) {
+          console.error(error);
+          alert("Something went wrong");
+        }
+      }}
+    >
+      <span className="text-center font-medium">
+        All data will be lost. Are you sure you want to delete this {table}?
+      </span>
+
+      <button
+        type="submit"
+        className="bg-red-700 text-white py-2 px-4 rounded-md w-max self-center"
+      >
+        Delete
+      </button>
+    </form>
+  );
+};
 
     if (type === "create" || type === "update") {
       const formFn = forms[table];

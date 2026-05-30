@@ -4,11 +4,17 @@ import { useState } from "react";
 import Swal from "sweetalert2";
 
 // Simple validation without Zod to avoid complexity
+interface TeacherFormProps {
+  type?: "create" | "update";
+  data?: any;
+  onTeacherAdded?: () => void;
+}
+
 export default function TeacherForm({
+  type = "create",
+  data,
   onTeacherAdded,
-}: {
-  onTeacherAdded: () => void;
-}) {
+}: TeacherFormProps) {
   const [formData, setFormData] = useState({
     username: "",
     firstName: "",
@@ -142,7 +148,7 @@ export default function TeacherForm({
         });
         setErrors({});
 
-        onTeacherAdded();
+        onTeacherAdded?.();
       } else {
         // Error popup based on status code
         if (res.status === 409) {

@@ -17,6 +17,20 @@ const teacherApiSchema = z.object({
 export async function GET() {
   try {
     const teachers = await prisma.teacher.findMany({
+      include: {
+        subjects: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        supervisedClasses: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -25,6 +39,7 @@ export async function GET() {
     return NextResponse.json(teachers);
   } catch (error) {
     console.error("GET teachers error:", error);
+
     return NextResponse.json(
       { message: "Failed to fetch teachers" },
       { status: 500 }
@@ -77,18 +92,22 @@ export async function POST(req: Request) {
     }
 
     // Create teacher
-    const teacher = await prisma.teacher.create({
-      data: {
-        username: validatedData.username,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        email: validatedData.email,
-        phone: validatedData.phone || null,
-        address: validatedData.address || null,
-        bloodType: validatedData.bloodType || null,
-        gender: validatedData.gender,
-      },
-    });
+const teacher = await prisma.teacher.create({
+  data: {
+    username: validatedData.username,
+    firstName: validatedData.firstName,
+    lastName: validatedData.lastName,
+    email: validatedData.email,
+    phone: validatedData.phone || null,
+    address: validatedData.address || null,
+    bloodType: validatedData.bloodType || null,
+    gender: validatedData.gender,
+  },
+  include: {
+    subjects: true,
+    supervisedClasses: true,
+  },
+});
 
     return NextResponse.json(
       { 
@@ -111,6 +130,38 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       { message: error.message || "Something went wrong" },
+      { status: 500 }
+    );
+  }
+}
+
+
+
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    await prisma.teacher.delete({
+      where: {
+        id,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Delete failed",
+      },
       { status: 500 }
     );
   }
