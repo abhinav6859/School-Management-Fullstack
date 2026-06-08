@@ -135,24 +135,30 @@ const teacher = await prisma.teacher.create({
   }
 }
 
-
-
-
-export async function DELETE(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: Request) {
   try {
-    const { id } = await params;
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Teacher ID is required",
+        },
+        { status: 400 }
+      );
+    }
 
     await prisma.teacher.delete({
       where: {
-        id,
+        id: id, 
       },
     });
 
     return NextResponse.json({
       success: true,
+      message: "Teacher deleted successfully",
     });
   } catch (error) {
     console.error(error);
