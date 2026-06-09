@@ -10,16 +10,35 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
-  const [toasts, setToasts] = useState<Array<{ id: number; message: string; type: "success" | "error" | "warning" | "info" }>>([]);
+ const [toasts, setToasts] = useState<
+  Array<{
+    id: string;
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+  }>
+>([]);
 
-  const showToast = useCallback((message: string, type: "success" | "error" | "warning" | "info" = "info") => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
-  }, []);
+const showToast = useCallback(
+  (
+    message: string,
+    type: "success" | "error" | "warning" | "info" = "info"
+  ) => {
+    const id = crypto.randomUUID();
+    // Alternative (if crypto.randomUUID() isn't available) then const id = `${Date.now()}-${Math.random()}`;
 
-  const removeToast = useCallback((id: number) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
+    setToasts((prev) => [
+      ...prev,
+      { id, message, type },
+    ]);
+  },
+  []
+);
+
+const removeToast = useCallback((id: string) => {
+  setToasts((prev) =>
+    prev.filter((toast) => toast.id !== id)
+  );
+}, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>

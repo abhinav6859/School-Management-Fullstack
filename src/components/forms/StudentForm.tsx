@@ -19,12 +19,18 @@ interface ClassItem {
   id: number;
   name: string;
 }
+interface StudentFormProps {
+  type: "create" | "update";
+  data?: any;
+  onStudentAdded?: () => void;
+}
 
 export default function StudentForm({
+  type,
+  data,
   onStudentAdded,
-}: {
-  onStudentAdded: () => void;
-}) {
+}: StudentFormProps)
+ {
   const [parents, setParents] = useState<Parent[]>([]);
   const [grades, setGrades] = useState<Grade[]>([]);
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -43,7 +49,28 @@ export default function StudentForm({
     gradeId: "",
     classId: "",
   });
-
+useEffect(() => {
+  if (type === "update" && data) {
+    setFormData({
+      username: data.username || "",
+      firstName: data.firstName || "",
+      lastName: data.lastName || "",
+      email: data.email || "",
+      phone: data.phone || "",
+      address: data.address || "",
+      bloodType: data.bloodType || "",
+      sex: data.sex || "MALE",
+      birthday: data.birthday
+        ? new Date(data.birthday)
+            .toISOString()
+            .split("T")[0]
+        : "",
+      parentId: data.parentId || "",
+      gradeId: data.gradeId?.toString() || "",
+      classId: data.classId?.toString() || "",
+    });
+  }
+}, [type, data]);
   useEffect(() => {
     fetchParents();
     fetchGrades();
@@ -80,46 +107,50 @@ export default function StudentForm({
   };
 
   const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
-    e.preventDefault();
+  e: React.FormEvent
+) => {
+  e.preventDefault();
 
-    try {
-      const res = await fetch("/api/students", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+  try {
+  const url = "/api/students";
 
-      if (res.ok) {
-        alert("Student Added");
+const method =
+  type === "create" ? "POST" : "PUT";
 
-        setFormData({
-          username: "",
-          firstName: "",
-          lastName: "",
-          email: "",
-          phone: "",
-          address: "",
-          bloodType: "",
-          sex: "MALE",
-          birthday: "",
-          parentId: "",
-          gradeId: "",
-          classId: "",
-        });
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    body: JSON.stringify({
+  ...(type === "update" && { id: data.id }),
+  ...formData,
+}),
+    });
 
-        onStudentAdded();
-      } else {
-        const data = await res.json();
-        alert(data.message);
-      }
-    } catch (error) {
-      console.log(error);
+   let result = null;
+
+try {
+  result = await res.json();
+} catch {
+  result = null;
+}
+
+    if (res.ok) {
+      alert(
+        type === "create"
+          ? "Student Added Successfully"
+          : "Student Updated Successfully"
+      );
+
+      onStudentAdded?.();
+    } else {
+      alert(result?.message || "An error occurred");
     }
-  };
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   return (
     <form
@@ -127,8 +158,10 @@ export default function StudentForm({
       className="space-y-4 border p-5 rounded-lg"
     >
       <h2 className="text-2xl font-bold">
-        Add Student
-      </h2>
+  {type === "create"
+    ? "Add Student"
+    : "Update Student"}
+</h2>
 
       <input
         type="text"
@@ -276,12 +309,14 @@ export default function StudentForm({
         ))}
       </select>
 
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded"
-      >
-        Save Student
-      </button>
+     <button
+  type="submit"
+  className="bg-blue-500 text-white px-4 py-2 rounded"
+>
+  {type === "create"
+    ? "Create Student"
+    : "Update Student"}
+</button>
     </form>
   );
 }
