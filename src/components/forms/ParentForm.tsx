@@ -70,11 +70,9 @@ export default function ParentForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 border p-5 rounded-lg"
+      className="space-y-4  "
     >
-      <h2 className="text-2xl font-bold">
-        Add Parent
-      </h2>
+     
 
       <input
         type="text"

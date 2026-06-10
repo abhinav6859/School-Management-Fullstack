@@ -96,11 +96,9 @@ export default function ClassForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border p-5 rounded-lg"
+      className="space-y-4"
     >
-      <h2 className="text-2xl font-bold mb-4">
-        Add Class
-      </h2>
+     
 
       <input
         type="text"
