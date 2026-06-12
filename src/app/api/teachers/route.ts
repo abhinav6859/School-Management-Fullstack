@@ -1,6 +1,8 @@
+
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { ITEM_PER_PAGE } from "@/lib/settings";
 
 // Zod validation schema for API
 const teacherApiSchema = z.object({
@@ -14,9 +16,33 @@ const teacherApiSchema = z.object({
   gender: z.enum(["MALE", "FEMALE"]),
 });
 
-export async function GET() {
+// Updated GET with pagination support
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const search = searchParams.get("search") || "";
+    
+    // Build where clause for search
+    const whereClause = search ? {
+      OR: [
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+        { username: { contains: search, mode: 'insensitive' } },
+      ]
+    } : {};
+    
+    // Get total count for pagination
+    const totalCount = await prisma.teacher.count({
+      where: whereClause
+    });
+    
+    // Get paginated teachers
     const teachers = await prisma.teacher.findMany({
+      where: whereClause,
+      skip: ITEM_PER_PAGE * (page - 1),
+      take: ITEM_PER_PAGE,
       include: {
         subjects: {
           select: {
@@ -36,12 +62,23 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(teachers);
+    return NextResponse.json({
+      success: true,
+      data: teachers,
+      totalCount,
+      currentPage: page,
+      totalPages: Math.ceil(totalCount / ITEM_PER_PAGE),
+      itemsPerPage: ITEM_PER_PAGE
+    });
+    
   } catch (error) {
     console.error("GET teachers error:", error);
 
     return NextResponse.json(
-      { message: "Failed to fetch teachers" },
+      { 
+        success: false,
+        message: "Failed to fetch teachers" 
+      },
       { status: 500 }
     );
   }
@@ -92,25 +129,26 @@ export async function POST(req: Request) {
     }
 
     // Create teacher
-const teacher = await prisma.teacher.create({
-  data: {
-    username: validatedData.username,
-    firstName: validatedData.firstName,
-    lastName: validatedData.lastName,
-    email: validatedData.email,
-    phone: validatedData.phone || null,
-    address: validatedData.address || null,
-    bloodType: validatedData.bloodType || null,
-    gender: validatedData.gender,
-  },
-  include: {
-    subjects: true,
-    supervisedClasses: true,
-  },
-});
+    const teacher = await prisma.teacher.create({
+      data: {
+        username: validatedData.username,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email,
+        phone: validatedData.phone || null,
+        address: validatedData.address || null,
+        bloodType: validatedData.bloodType || null,
+        gender: validatedData.gender,
+      },
+      include: {
+        subjects: true,
+        supervisedClasses: true,
+      },
+    });
 
     return NextResponse.json(
       { 
+        success: true,
         message: "Teacher created successfully",
         teacher 
       },
@@ -123,18 +161,23 @@ const teacher = await prisma.teacher.create({
     // Handle Prisma unique constraint violations
     if (error.code === 'P2002') {
       return NextResponse.json(
-        { message: "A teacher with this username or email already exists" },
+        { 
+          success: false,
+          message: "A teacher with this username or email already exists" 
+        },
         { status: 409 }
       );
     }
 
     return NextResponse.json(
-      { message: error.message || "Something went wrong" },
+      { 
+        success: false,
+        message: error.message || "Something went wrong" 
+      },
       { status: 500 }
     );
   }
 }
-
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

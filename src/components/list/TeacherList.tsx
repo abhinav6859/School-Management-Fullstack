@@ -1,6 +1,8 @@
+// components/list/TeacherList.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "../Pagination";
 import Table from "../Table";
 import Link from "next/link";
@@ -10,6 +12,7 @@ import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { role } from "@/lib/data";
 import { useToast } from "@/components/ToastProvider";
+import { ITEM_PER_PAGE } from "@/lib/settings";
 
 interface Teacher {
   id: string;
@@ -21,6 +24,7 @@ interface Teacher {
   phone?: string | null;
   address?: string | null;
   img?: string | null;
+  createdAt: Date;
 }
 
 type TeacherListType = Teacher & {
@@ -187,6 +191,9 @@ const renderRow = (item: TeacherListType) => (
             table="teacher"
             type="delete"
             id={item.id}
+            onSuccess={() => {
+              // Refresh will be handled by the event listener
+            }}
           />
         )}
       </div>
@@ -199,51 +206,93 @@ export default function TeacherList({
 }: {
   refresh: number;
 }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [teachers, setTeachers] = useState<TeacherListType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const { showToast } = useToast();
 
-  const fetchTeachers = async () => {
+  // Get page from URL or default to 1
+  const page = parseInt(searchParams.get("page") || "1");
+  
+  // State for search
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+
+  const fetchTeachers = async (pageNum: number, search: string = "") => {
     try {
       setLoading(true);
       setError("");
 
-      const response = await fetch("/api/teachers");
+      // Build URL with query parameters
+      const params = new URLSearchParams();
+      params.append("page", pageNum.toString());
+      
+      if (search) {
+        params.append("search", search);
+      }
+
+      const response = await fetch(`/api/teachers?${params.toString()}`);
       const result = await response.json();
 
-      // Handle response based on API structure
-      if (response.ok && (result.success || Array.isArray(result))) {
-        const teachersData = result.data || result;
-        setTeachers(teachersData);
-        
-        // Success toast (optional - only show on refresh/important updates)
-        if (refresh > 0) {
-          showToast(`Loaded ${teachersData.length} teachers successfully`, "success");
-        }
+      if (response.ok && result.success) {
+        setTeachers(result.data);
+        setTotalCount(result.totalCount);
+        setCurrentPage(result.currentPage);
       } else {
         const errorMessage = result.message || "Failed to fetch teachers";
         setError(errorMessage);
-        showToast(errorMessage, "error");
+        if (refresh > 0) {
+          showToast(errorMessage, "error");
+        }
       }
     } catch (err) {
       console.error(err);
       const errorMessage = "Unable to connect to the server";
       setError(errorMessage);
-      showToast(errorMessage, "error");
+      if (refresh > 0) {
+        showToast(errorMessage, "error");
+      }
     } finally {
       setLoading(false);
     }
   };
 
+  // Handle search
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+    
+    // Update URL with search param and reset to page 1
+    const params = new URLSearchParams(searchParams);
+    if (search) {
+      params.set("search", search);
+    } else {
+      params.delete("search");
+    }
+    params.set("page", "1");
+    router.push(`${window.location.pathname}?${params.toString()}`);
+  };
+
+  // Initial load and when URL params change
   useEffect(() => {
-    fetchTeachers();
-  }, [refresh]);
+    const urlSearch = searchParams.get("search") || "";
+    const urlPage = parseInt(searchParams.get("page") || "1");
+    
+    if (urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch);
+    }
+    
+    fetchTeachers(urlPage, urlSearch);
+  }, [page, refresh, searchParams]);
 
   // Listen for teacher creation/update/deletion events from FormModal
   useEffect(() => {
     const handleTeacherUpdate = () => {
-      fetchTeachers();
+      const urlSearch = searchParams.get("search") || "";
+      const urlPage = parseInt(searchParams.get("page") || "1");
+      fetchTeachers(urlPage, urlSearch);
       showToast("Teacher list has been updated", "success");
     };
 
@@ -256,7 +305,11 @@ export default function TeacherList({
       window.removeEventListener("teacherUpdated", handleTeacherUpdate);
       window.removeEventListener("teacherDeleted", handleTeacherUpdate);
     };
-  }, []);
+  }, [searchParams]);
+
+  const totalPages = Math.ceil(totalCount / ITEM_PER_PAGE);
+  const startItem = totalCount === 0 ? 0 : (currentPage - 1) * ITEM_PER_PAGE + 1;
+  const endItem = Math.min(currentPage * ITEM_PER_PAGE, totalCount);
 
   if (loading) {
     return (
@@ -280,7 +333,7 @@ export default function TeacherList({
             <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Teachers List
               <div className="inline-block ml-3 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 rounded-full">
-                {teachers.length} Total
+                {totalCount} Total
               </div>
             </h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -289,40 +342,15 @@ export default function TeacherList({
           </div>
 
           <div className="flex items-center gap-3">
-            <TableSearch onSearch={async (searchTerm) => {
-              if (!searchTerm) {
-                await fetchTeachers();
-              } else {
-                try {
-                  setLoading(true);
-                  const response = await fetch(`/api/teachers?search=${encodeURIComponent(searchTerm)}`);
-                  const result = await response.json();
-                  
-                  if (response.ok && (result.success || Array.isArray(result))) {
-                    const teachersData = result.data || result;
-                    setTeachers(teachersData);
-                    
-                    if (teachersData.length === 0) {
-                      showToast(`No teachers found matching "${searchTerm}"`, "info");
-                    } else {
-                      showToast(`Found ${teachersData.length} teacher(s) matching "${searchTerm}"`, "success");
-                    }
-                  } else {
-                    showToast(result.message || "Search failed", "error");
-                  }
-                } catch (err) {
-                  showToast("Search failed. Please try again.", "error");
-                } finally {
-                  setLoading(false);
-                }
-              }
-            }} />
+            <TableSearch onSearch={handleSearch} initialValue={searchTerm} />
             {role === "admin" && (
               <FormModal
                 table="teacher"
                 type="create"
                 onSuccess={() => {
-                  fetchTeachers();
+                  const urlSearch = searchParams.get("search") || "";
+                  const urlPage = parseInt(searchParams.get("page") || "1");
+                  fetchTeachers(urlPage, urlSearch);
                   showToast("New teacher added successfully", "success");
                 }}
                 onError={(errorMsg) => {
@@ -344,7 +372,11 @@ export default function TeacherList({
           </div>
           <p className="text-red-600 font-medium">{error}</p>
           <button 
-            onClick={() => fetchTeachers()}
+            onClick={() => {
+              const urlSearch = searchParams.get("search") || "";
+              const urlPage = parseInt(searchParams.get("page") || "1");
+              fetchTeachers(urlPage, urlSearch);
+            }}
             className="mt-4 px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
           >
             Try Again
@@ -358,7 +390,9 @@ export default function TeacherList({
             </svg>
           </div>
           <p className="text-gray-500 font-medium">No teachers found</p>
-          <p className="text-sm text-gray-400 mt-1">Get started by adding your first teacher</p>
+          <p className="text-sm text-gray-400 mt-1">
+            {searchTerm ? `No results for "${searchTerm}"` : "Get started by adding your first teacher"}
+          </p>
         </div>
       ) : (
         <>
@@ -370,12 +404,25 @@ export default function TeacherList({
             />
           </div>
 
+          {/* Pagination Info and Controls */}
           <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="text-sm text-gray-500">
-                Showing <span className="font-semibold text-gray-700">{teachers.length}</span> teachers
+                Showing <span className="font-semibold text-gray-700">{startItem}</span> to{' '}
+                <span className="font-semibold text-gray-700">{endItem}</span> of{' '}
+                <span className="font-semibold text-gray-700">{totalCount}</span> teachers
+                {searchTerm && (
+                  <span className="ml-2 text-purple-600">
+                    (filtered by: "{searchTerm}")
+                  </span>
+                )}
               </div>
-              <Pagination />
+              
+              {/* Use your existing Pagination component */}
+              <Pagination 
+                page={currentPage} 
+                count={totalCount}
+              />
             </div>
           </div>
         </>
