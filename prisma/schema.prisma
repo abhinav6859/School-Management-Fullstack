@@ -22,6 +22,7 @@ model Teacher {
   firstName         String
   lastName          String
   email             String       @unique
+  password          String
   phone             String?
   address           String?
   gender            UserSex
@@ -48,6 +49,7 @@ model Student {
   firstName   String
   lastName    String
   email       String?      @unique
+  password     String
   phone       String?      @unique
   address     String?
   bloodType   String
@@ -63,6 +65,7 @@ model Student {
   class       Class        @relation(fields: [classId], references: [id])
   grade       Grade        @relation(fields: [gradeId], references: [id])
   parent      Parent       @relation(fields: [parentId], references: [id])
+   fees       StudentFee[]
 }
 
 model Parent {
@@ -71,6 +74,7 @@ model Parent {
   firstName String
   lastName  String
   email     String    @unique
+  password  String
   phone     String
   address   String?
   createdAt DateTime  @default(now())
@@ -82,6 +86,7 @@ model Grade {
   level    Int       @unique
   classes  Class[]
   students Student[]
+  feeStructures FeeStructure[]
 }
 
 model Class {
@@ -187,6 +192,80 @@ model Announcement {
   class       Class?   @relation(fields: [classId], references: [id])
 }
 
+model FeeStructure {
+  id        String   @id @default(cuid())
+  name      String
+  amount    Float
+
+  gradeId   Int?
+
+  grade     Grade? @relation(fields:[gradeId], references:[id])
+
+  fees      StudentFee[]
+
+  createdAt DateTime @default(now())
+}
+
+model StudentFee {
+  id             String @id @default(cuid())
+
+  studentId      String
+
+  feeStructureId String
+
+  amount         Float
+
+  dueDate        DateTime
+
+  status         FeeStatus @default(PENDING)
+
+  student        Student @relation(fields:[studentId], references:[id])
+
+  feeStructure   FeeStructure @relation(fields:[feeStructureId], references:[id])
+
+  payments       Payment[]
+
+  createdAt      DateTime @default(now())
+}
+
+model Payment {
+  id                 String @id @default(cuid())
+
+  studentFeeId       String
+
+  amount             Float
+
+  razorpayOrderId    String? @unique
+
+  razorpayPaymentId  String? @unique
+
+  razorpaySignature  String?
+
+  status             PaymentStatus @default(CREATED)
+
+  paidAt             DateTime?
+
+  studentFee         StudentFee @relation(fields:[studentFeeId], references:[id])
+
+  receipt            Receipt?
+
+  createdAt          DateTime @default(now())
+}
+
+model Receipt {
+  id          String @id @default(cuid())
+
+  paymentId   String @unique
+
+  receiptNo   String @unique
+
+  pdfUrl      String?
+
+  issuedAt    DateTime @default(now())
+
+  payment     Payment @relation(fields:[paymentId], references:[id])
+}
+
 enum UserSex {
   MALE
   FEMALE
@@ -195,6 +274,10 @@ enum UserSex {
 enum Role {
   ADMIN
   TEACHER
+  STUDENT
+  PARENT
+  ACCOUNTANT
+  
 }
 
 enum Day {
@@ -203,4 +286,18 @@ enum Day {
   WEDNESDAY
   THURSDAY
   FRIDAY
+}
+
+enum FeeStatus {
+  PENDING
+  PARTIAL
+  PAID
+  OVERDUE
+}
+
+enum PaymentStatus {
+  CREATED
+  PAID
+  FAILED
+  REFUNDED
 }

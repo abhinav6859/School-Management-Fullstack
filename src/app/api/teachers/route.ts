@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { authorize } from "@/lib/authorize";
 
 // Zod validation schema for API
 const teacherApiSchema = z.object({
@@ -86,6 +87,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(req: Request) {
   try {
+    authorize(req, ["ADMIN"]);
     const body = await req.json();
 
     // Validate with Zod

@@ -1,9 +1,15 @@
 "use client";
-import { role } from "@/lib/data";
+
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+
+type Role = "admin" | "teacher" | "student" | "parent";
+
+interface MenuProps {
+  role: Role;
+}
 
 const menuItems = [
   {
@@ -11,21 +17,21 @@ const menuItems = [
     items: [
       {
         icon: "/home.png",
-        label: "Home",
+        label: "Dashboard",
         href: "/",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-icon:"/home.png",
-label : "grades",
-href :"/list/grades",
-visible: ["admin","teacher","student","parent"],
+        icon: "/grade.png",
+        label: "Grades",
+        href: "/list/grades",
+        visible: ["admin", "teacher"],
       },
       {
         icon: "/teacher.png",
         label: "Teachers",
         href: "/list/teachers",
-        visible: ["admin", "teacher"],
+        visible: ["admin"],
       },
       {
         icon: "/student.png",
@@ -43,7 +49,7 @@ visible: ["admin","teacher","student","parent"],
         icon: "/subject.png",
         label: "Subjects",
         href: "/list/subjects",
-        visible: ["admin"],
+        visible: ["admin", "teacher"],
       },
       {
         icon: "/class.png",
@@ -67,7 +73,7 @@ visible: ["admin","teacher","student","parent"],
         icon: "/assignment.png",
         label: "Assignments",
         href: "/list/assignments",
-        visible: ["admin", "teacher", "student", "parent"],
+        visible: ["admin", "teacher", "student"],
       },
       {
         icon: "/result.png",
@@ -88,12 +94,6 @@ visible: ["admin","teacher","student","parent"],
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/message.png",
-        label: "Messages",
-        href: "/list/messages",
-        visible: ["admin", "teacher", "student", "parent"],
-      },
-      {
         icon: "/announcement.png",
         label: "Announcements",
         href: "/list/announcements",
@@ -102,7 +102,7 @@ visible: ["admin","teacher","student","parent"],
     ],
   },
   {
-    title: "OTHER",
+    title: "ACCOUNT",
     items: [
       {
         icon: "/profile.png",
@@ -126,108 +126,110 @@ visible: ["admin","teacher","student","parent"],
   },
 ];
 
-const Menu = () => {
+const Menu = ({ role }: MenuProps) => {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Helper function to check if link is active
   const isActive = (href: string) => {
-    if (href === "/") return pathname === href;
+    if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
   return (
     <>
-      {/* Mobile Menu Toggle Button */}
+      {/* Mobile Toggle */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-md shadow-md hover:bg-gray-50 transition-colors"
-        aria-label="Toggle menu"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
       >
         <div className="w-6 h-5 flex flex-col justify-between">
-          <span className={`w-full h-0.5 bg-gray-600 transition-transform ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-          <span className={`w-full h-0.5 bg-gray-600 transition-opacity ${isMobileMenuOpen ? 'opacity-0' : ''}`} />
-          <span className={`w-full h-0.5 bg-gray-600 transition-transform ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+          <span
+            className={`h-0.5 bg-gray-700 transition-all ${
+              isMobileMenuOpen
+                ? "rotate-45 translate-y-2"
+                : ""
+            }`}
+          />
+          <span
+            className={`h-0.5 bg-gray-700 transition-all ${
+              isMobileMenuOpen ? "opacity-0" : ""
+            }`}
+          />
+          <span
+            className={`h-0.5 bg-gray-700 transition-all ${
+              isMobileMenuOpen
+                ? "-rotate-45 -translate-y-2"
+                : ""
+            }`}
+          />
         </div>
       </button>
 
-      {/* Overlay for mobile */}
+      {/* Overlay */}
       {isMobileMenuOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+          className="fixed inset-0 bg-black/40 lg:hidden z-40"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
 
-      {/* Menu Container */}
-      <div
-        className={`
-          fixed lg:relative 
-          top-0 left-0 
-          h-full 
-          bg-white 
-          shadow-xl lg:shadow-none 
-          z-40 
-          transition-transform duration-300 ease-in-out
-          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          w-64 lg:w-auto
-          overflow-y-auto
-        `}
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:relative top-0 left-0 h-screen bg-white shadow-xl lg:shadow-none z-50 transition-transform duration-300 overflow-y-auto
+        ${
+          isMobileMenuOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
+        }
+        w-64`}
       >
-        <div className="mt-4 text-sm p-4 lg:p-0">
+        <div className="p-4 mt-14 lg:mt-0">
           {menuItems.map((section) => (
-            <div className="flex flex-col gap-2 mb-6" key={section.title}>
-              <span className="hidden lg:block text-xs font-semibold text-gray-400 uppercase tracking-wider my-4 px-2">
+            <div key={section.title} className="mb-8">
+              <h3 className="text-xs uppercase font-semibold text-gray-400 mb-3 px-3">
                 {section.title}
-              </span>
-              {section.items.map((item) => {
-                if (item.visible.includes(role)) {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      href={item.href}
-                      key={item.label}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className={`
-                        group flex items-center gap-4 
-                        py-2.5 px-3 lg:px-2 
-                        rounded-lg 
-                        transition-all duration-200
-                        ${active 
-                          ? 'bg-lamaSkyLight text-lamaSky font-semibold' 
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              </h3>
+
+              <div className="space-y-1">
+                {section.items
+                  .filter((item) => item.visible.includes(role))
+                  .map((item) => {
+                    const active = isActive(item.href);
+
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() =>
+                          setIsMobileMenuOpen(false)
                         }
-                      `}
-                    >
-                      <div className="relative">
-                        <Image 
-                          src={item.icon} 
-                          alt="" 
-                          width={20} 
-                          height={20} 
-                          className={`
-                            transition-transform duration-200
-                            ${active ? 'scale-110' : 'group-hover:scale-110'}
-                          `}
+                        className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all
+                        ${
+                          active
+                            ? "bg-sky-100 text-sky-700 font-semibold"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        <Image
+                          src={item.icon}
+                          alt={item.label}
+                          width={20}
+                          height={20}
                         />
-                      </div>
-                      <span className="hidden lg:block text-sm font-medium">
-                        {item.label}
-                      </span>
-                      
-                      {/* Active indicator */}
-                      {active && (
-                        <div className="ml-auto w-1 h-6 bg-lamaSky rounded-full hidden lg:block" />
-                      )}
-                    </Link>
-                  );
-                }
-                return null;
-              })}
+
+                        <span>{item.label}</span>
+
+                        {active && (
+                          <div className="ml-auto w-1 h-6 bg-sky-500 rounded-full" />
+                        )}
+                      </Link>
+                    );
+                  })}
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      </aside>
     </>
   );
 };

@@ -122,12 +122,9 @@ export default function AttendanceForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="border p-5 rounded-lg"
+      className="space-y-4"
     >
-      <h2 className="text-2xl font-bold mb-4">
-        Add Attendance
-      </h2>
-
+    
       <input
         type="date"
         name="date"

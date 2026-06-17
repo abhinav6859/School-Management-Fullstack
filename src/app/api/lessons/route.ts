@@ -1,3 +1,4 @@
+import { authorize } from "@/lib/authorize";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -28,6 +29,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    authorize(req, ["ADMIN", "TEACHER"]);
     const body = await req.json();
 
     const lesson = await prisma.lesson.create({

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { authorize } from "@/lib/authorize";
 
 export async function GET() {
   try {
@@ -30,6 +31,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+      authorize(req, ["ADMIN", "TEACHER"]);
     const body = await req.json();
 
     const assignment =

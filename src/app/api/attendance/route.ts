@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { authorize } from "@/lib/authorize";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    authorize(req, ["ADMIN", "TEACHER"]);
     const attendance =
       await prisma.attendance.findMany({
         include: {

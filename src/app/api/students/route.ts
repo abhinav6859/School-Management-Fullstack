@@ -1,215 +1,8 @@
-// import { prisma } from "@/lib/prisma";
-// import { NextResponse } from "next/server";
-// import { z } from "zod";
-
-// const StudentSchema = z.object({
-//   username: z
-//     .string()
-//     .min(3, "Username must be at least 3 characters"),
-
-//   img: z
-//     .string()
-//     .url("Image must be a valid URL")
-//     .optional()
-//     .or(z.literal("")),
-
-//   firstName: z
-//     .string()
-//     .min(2, "First name is required"),
-
-//   lastName: z
-//     .string()
-//     .min(2, "Last name is required"),
-
-//   email: z
-//     .string()
-//     .email("Invalid email")
-//     .optional()
-//     .or(z.literal("")),
-
-//   phone: z
-//     .string()
-//     .min(10, "Phone number is too short")
-//     .max(15, "Phone number is too long")
-//     .optional()
-//     .or(z.literal("")),
-
-//   address: z
-//     .string()
-//     .optional(),
-
-//   bloodType: z
-//     .string()
-//     .min(1, "Blood type is required"),
-
-//   sex: z.enum(["MALE", "FEMALE"]),
-
-//   birthday: z.coerce.date(),
-
-//   parentId: z
-//     .string()
-//     .min(1, "Parent is required"),
-
-//   gradeId: z.coerce
-//     .number()
-//     .int()
-//     .positive("Grade is required"),
-
-//   classId: z.coerce
-//     .number()
-//     .int()
-//     .positive("Class is required"),
-// });
-
-// export type StudentInput = z.infer<typeof StudentSchema>;
-// const StudentDeleteSchema = z.object({
-//   id: z.string().cuid("Invalid student id"),
-// });
-// export async function GET() {
-//   try {
-//     const students = await prisma.student.findMany({
-//       include: {
-//         parent: true,
-//         class: true,
-//         grade: true,
-//       },
-//       orderBy: {
-//         createdAt: "desc",
-//       },
-//     });
-
-//     return NextResponse.json(students);
-//   } catch (error) {
-//     return NextResponse.json(
-//       { message: "Failed to fetch students" },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// export async function POST(req: Request) {
-//   try {
-//     const body = await req.json();
-
-//     const validatedFields = StudentSchema.safeParse(body);
-
-//     if (!validatedFields.success) {
-//       return NextResponse.json(
-//         {
-//           success: false,
-//           errors: validatedFields.error.flatten().fieldErrors,
-//         },
-//         { status: 400 }
-//       );
-//     }
-
-//     const data = validatedFields.data;
-
-//     const student = await prisma.student.create({
-//       data: {
-//         username: data.username,
-//         img: data.img || null,
-//         firstName: data.firstName,
-//         lastName: data.lastName,
-//         email: data.email || null,
-//         phone: data.phone || null,
-//         address: data.address || null,
-//         bloodType: data.bloodType,
-//         sex: data.sex,
-//         birthday: data.birthday,
-
-//         parent: {
-//           connect: {
-//             id: data.parentId,
-//           },
-//         },
-
-//         class: {
-//           connect: {
-//             id: data.classId,
-//           },
-//         },
-
-//         grade: {
-//           connect: {
-//             id: data.gradeId,
-//           },
-//         },
-//       },
-
-//       include: {
-//         parent: true,
-//         class: true,
-//         grade: true,
-//       },
-//     });
-
-//     return NextResponse.json({
-//       success: true,
-//       data: student,
-//     });
-//   } catch (error: any) {
-//     console.log(error);
-
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: error.message || "Something went wrong",
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-// export async function DELETE(req: Request) {
-//   try {
-//     const { searchParams } = new URL(req.url);
-
-//     const validation = StudentDeleteSchema.safeParse({
-//       id: searchParams.get("id"),
-//     });
-
-//     if (!validation.success) {
-//       return NextResponse.json(
-//         {
-//           success: false,
-//           errors: validation.error.flatten().fieldErrors,
-//         },
-//         { status: 400 }
-//       );
-//     }
-
-//     const { id } = validation.data;
-
-//     const student = await prisma.student.delete({
-//       where: {
-//         id,
-//       },
-//     });
-
-//     return NextResponse.json({
-//       success: true,
-//       data: student,
-//     });
-//   } catch (error: any) {
-//     console.log(error);
-
-//     return NextResponse.json(
-//       {
-//         success: false,
-//         message: error.message || "Something went wrong",
-//       },
-//       { status: 500 }
-//     );
-//   }
-// }
-
-
-
 
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { authorize } from "@/lib/authorize";
 
 const StudentSchema = z.object({
   username: z
@@ -331,8 +124,13 @@ const StudentDeleteSchema = z.object({
   id: z.string().cuid("Invalid student id"),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    console.log("GET /api/students called");
+
+    // TEMPORARILY DISABLE AUTH
+    // authorize(req, ["ADMIN"]);
+
     const students = await prisma.student.findMany({
       include: {
         parent: true,
@@ -344,11 +142,21 @@ export async function GET() {
       },
     });
 
+    console.log("Students found:", students.length);
+
     return NextResponse.json(students);
   } catch (error) {
-    console.error("GET Error:", error);
+    console.error("FULL ERROR:");
+    console.error(error);
+
     return NextResponse.json(
-      { message: "Failed to fetch students" },
+      {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : String(error),
+      },
       { status: 500 }
     );
   }
