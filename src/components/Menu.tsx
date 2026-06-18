@@ -17,13 +17,13 @@ const menuItems = [
     items: [
       {
         icon: "/home.png",
-        label: "Dashboard",
+        label: "Home",
         href: "/",
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/grade.png",
-        label: "Grades",
+        icon: "/more.png",
+        label: "grades",
         href: "/list/grades",
         visible: ["admin", "teacher"],
       },

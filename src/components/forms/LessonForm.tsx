@@ -63,7 +63,7 @@ export default function LessonForm({
   };
 
   const fetchTeachers = async () => {
-    const res = await fetch("/api/teachers");
+    const res = await fetch("/api/teachers?all=true");
     const data = await res.json();
 
     setTeachers(data);

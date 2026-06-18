@@ -1,11 +1,12 @@
-
+// app/api/teachers/route.ts
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { authorize } from "@/lib/authorize";
+import bcrypt from "bcryptjs";
 
-// Zod validation schema for API
+// Zod validation schema for API with password
 const teacherApiSchema = z.object({
   username: z.string().min(3).max(20),
   email: z.string().email(),
@@ -15,14 +16,16 @@ const teacherApiSchema = z.object({
   address: z.string().optional().nullable(),
   bloodType: z.enum(["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]).optional().nullable(),
   gender: z.enum(["MALE", "FEMALE"]),
+  password: z.string().min(8),
 });
 
-// Updated GET with pagination support
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
+    const all = searchParams.get("all") === "true"; // Add this
     
     // Build where clause for search
     const whereClause = search ? {
@@ -34,12 +37,27 @@ export async function GET(request: NextRequest) {
       ]
     } : {};
     
-    // Get total count for pagination
+    // If all=true, return all teachers without pagination
+    if (all) {
+      const teachers = await prisma.teacher.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+        orderBy: {
+          firstName: "asc",
+        },
+      });
+      return NextResponse.json(teachers);
+    }
+    
+    // Otherwise, return paginated response
     const totalCount = await prisma.teacher.count({
       where: whereClause
     });
     
-    // Get paginated teachers
     const teachers = await prisma.teacher.findMany({
       where: whereClause,
       skip: ITEM_PER_PAGE * (page - 1),
@@ -74,7 +92,6 @@ export async function GET(request: NextRequest) {
     
   } catch (error) {
     console.error("GET teachers error:", error);
-
     return NextResponse.json(
       { 
         success: false,
@@ -85,9 +102,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// app/api/teachers/route.ts (Updated POST handler)
 export async function POST(req: Request) {
   try {
-    authorize(req, ["ADMIN"]);
+    // Authorize the request - check if user is ADMIN
+    const user = await authorize(req, ["ADMIN"]);
+    console.log("Authorized user:", user);
+
     const body = await req.json();
 
     // Validate with Zod
@@ -130,7 +151,10 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create teacher
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
+    // Create teacher with hashed password
     const teacher = await prisma.teacher.create({
       data: {
         username: validatedData.username,
@@ -141,24 +165,36 @@ export async function POST(req: Request) {
         address: validatedData.address || null,
         bloodType: validatedData.bloodType || null,
         gender: validatedData.gender,
-      },
-      include: {
-        subjects: true,
-        supervisedClasses: true,
+        password: hashedPassword,
+        role: "TEACHER",
       },
     });
+
+    // Remove password from response
+    const { password, ...teacherWithoutPassword } = teacher;
 
     return NextResponse.json(
       { 
         success: true,
         message: "Teacher created successfully",
-        teacher 
+        teacher: teacherWithoutPassword 
       },
       { status: 201 }
     );
 
   } catch (error: any) {
     console.error("Teacher creation error:", error);
+    
+    // Handle authorization errors
+    if (error.message === "Unauthorized") {
+      return NextResponse.json(
+        { 
+          success: false,
+          message: "You are not authorized to perform this action" 
+        },
+        { status: 403 }
+      );
+    }
     
     // Handle Prisma unique constraint violations
     if (error.code === 'P2002') {
@@ -180,6 +216,7 @@ export async function POST(req: Request) {
     );
   }
 }
+
 export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

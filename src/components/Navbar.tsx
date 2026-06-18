@@ -1,8 +1,60 @@
+// components/Navbar.tsx
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-const Navbar = () => {
+interface NavbarProps {
+  role?: "admin" | "teacher" | "student" | "parent";
+}
+
+const Navbar = ({ role }: NavbarProps) => {
+  const router = useRouter();
+  const [userName, setUserName] = useState("User");
+  const [userRole, setUserRole] = useState("");
+
+  useEffect(() => {
+    // Get user info from localStorage
+    const storedRole = localStorage.getItem("role");
+    const userId = localStorage.getItem("userId");
+    
+    if (storedRole) {
+      setUserRole(storedRole);
+    }
+
+    // You can fetch user details from an API here
+    // For now, use localStorage or set a default
+    const storedName = localStorage.getItem("userName");
+    if (storedName) {
+      setUserName(storedName);
+    } else {
+      // Set default name based on role
+      const defaultNames = {
+        ADMIN: "Admin",
+        TEACHER: "Teacher",
+        STUDENT: "Student",
+        PARENT: "Parent",
+      };
+      setUserName(defaultNames[storedRole as keyof typeof defaultNames] || "User");
+    }
+  }, []);
+
+  const handleLogout = () => {
+    // Clear all storage
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userName");
+    
+    // Clear cookies
+    document.cookie = "token=; path=/; max-age=0";
+    document.cookie = "role=; path=/; max-age=0";
+    
+    // Redirect to sign-in
+    router.push("/sign-in");
+  };
+
   return (
     <div className="flex items-center justify-between px-6 py-3 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200">
       
@@ -40,12 +92,12 @@ const Navbar = () => {
 
         {/* 👤 USER INFO */}
         <div className="hidden sm:flex flex-col text-right">
-          <span className="text-sm font-semibold text-gray-700">John Doe</span>
-          <span className="text-xs text-gray-400">Admin</span>
+          <span className="text-sm font-semibold text-gray-700">{userName}</span>
+          <span className="text-xs text-gray-400">{userRole}</span>
         </div>
 
-        {/* 🖼 AVATAR */}
-        <div className="relative cursor-pointer group">
+        {/* 🖼 AVATAR with Logout */}
+        <div className="relative group cursor-pointer" onClick={handleLogout}>
           <Image
             src="/avatar.png"
             alt="avatar"
@@ -58,6 +110,26 @@ const Navbar = () => {
           <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
         </div>
 
+        {/* Logout Button (optional) */}
+        <button
+          onClick={handleLogout}
+          className="hidden md:flex items-center gap-2 text-sm text-red-500 hover:text-red-700 transition"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   );

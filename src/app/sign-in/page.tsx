@@ -1,102 +1,69 @@
+// app/sign-in/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
-  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const [username, setUsername] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
-
-  const [loading, setLoading] =
-    useState(false);
-
-  const [error, setError] =
-    useState("");
-
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch(
-        "/api/auth/login",
-        {
-          method: "POST",
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            username,
-            password,
-          }),
-        }
-      );
-
-      const data =
-        await response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.error ||
-            "Login failed"
-        );
+        setError(data.error || "Login failed");
+        setLoading(false);
         return;
       }
 
-      localStorage.setItem(
-        "token",
-        data.token
-      );
+      console.log("Login successful:", data);
 
-      localStorage.setItem(
-        "role",
-        data.role
-      );
+      // Store in localStorage
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("role", data.role);
+      localStorage.setItem("userId", data.user.id);
+      
+      const userName = data.user.firstName 
+        ? `${data.user.firstName} ${data.user.lastName || ''}`.trim()
+        : data.user.username || username;
+      localStorage.setItem("userName", userName);
 
-      localStorage.setItem(
-        "userId",
-        data.user.id
-      );
+      // Set cookie
+      document.cookie = `token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
+      document.cookie = `role=${data.role}; path=/; max-age=604800; SameSite=Lax`;
 
-      switch (data.role) {
-        case "ADMIN":
-          router.push("/admin");
-          break;
+      // Redirect based on role - WITHOUT /dashboard prefix
+      const roleRoutes: Record<string, string> = {
+        ADMIN: "/admin",
+        TEACHER: "/teacher",
+        STUDENT: "/student",
+        PARENT: "/parent",
+      };
 
-        case "TEACHER":
-          router.push("/teacher");
-          break;
-
-        case "STUDENT":
-          router.push("/student");
-          break;
-
-        case "PARENT":
-          router.push("/parent");
-          break;
-
-        default:
-          router.push("/");
-      }
+      const redirectPath = roleRoutes[data.role] || "/";
+      console.log("Redirecting to:", redirectPath);
+      
+      // Use window.location for hard redirect
+      window.location.href = redirectPath;
+      
     } catch (err) {
       console.error(err);
-
-      setError(
-        "Something went wrong"
-      );
-    } finally {
+      setError("Something went wrong");
       setLoading(false);
     }
   };
@@ -107,7 +74,6 @@ export default function SignInPage() {
         <h1 className="text-3xl font-bold text-center mb-2">
           School Management
         </h1>
-
         <p className="text-gray-500 text-center mb-6">
           Sign in to continue
         </p>
@@ -118,23 +84,15 @@ export default function SignInPage() {
           </div>
         )}
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-1">
               Username
             </label>
-
             <input
               type="text"
               value={username}
-              onChange={(e) =>
-                setUsername(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setUsername(e.target.value)}
               required
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter username"
@@ -145,15 +103,10 @@ export default function SignInPage() {
             <label className="block text-sm font-medium mb-1">
               Password
             </label>
-
             <input
               type="password"
               value={password}
-              onChange={(e) =>
-                setPassword(
-                  e.target.value
-                )
-              }
+              onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter password"
@@ -165,9 +118,7 @@ export default function SignInPage() {
             disabled={loading}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
           >
-            {loading
-              ? "Signing In..."
-              : "Sign In"}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
       </div>

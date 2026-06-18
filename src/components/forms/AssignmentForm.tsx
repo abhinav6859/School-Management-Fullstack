@@ -50,7 +50,7 @@ export default function AssignmentForm({
 
   const fetchTeachers = async () => {
     const res = await fetch(
-      "/api/teachers"
+      "/api/teachers?all=true"
     );
 
     const data = await res.json();

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import Swal from "sweetalert2";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
-// Simple validation without Zod to avoid complexity
 interface TeacherFormProps {
   type?: "create" | "update";
   data?: any;
@@ -24,10 +24,14 @@ export default function TeacherForm({
     address: "",
     bloodType: "",
     gender: "MALE",
+    password: "",
+    confirmPassword: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Show popup message
   const showPopup = (title: string, message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
@@ -85,10 +89,24 @@ export default function TeacherForm({
       newErrors.bloodType = "Please enter a valid blood type (A+, A-, B+, B-, AB+, AB-, O+, O-)";
     }
 
+    // Password validation
+    if (!formData.password) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 8) {
+      newErrors.password = "Password must be at least 8 characters";
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      newErrors.password = "Password must contain at least one uppercase letter, one lowercase letter, and one number";
+    }
+
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length > 0) {
-      // Show first error as popup
       const firstError = Object.values(newErrors)[0];
       showPopup("Validation Error", firstError, "error");
       return false;
@@ -104,7 +122,6 @@ export default function TeacherForm({
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error for this field when user starts typing
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: "" });
     }
@@ -113,7 +130,6 @@ export default function TeacherForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate form before submission
     if (!validateForm()) {
       return;
     }
@@ -121,18 +137,23 @@ export default function TeacherForm({
     setLoading(true);
 
     try {
+      // Remove confirmPassword before sending to API
+      const { confirmPassword, ...submitData } = formData;
+      
+      console.log("Submitting teacher data:", submitData);
+
       const res = await fetch("/api/teachers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       const data = await res.json();
+      console.log("Response:", data);
 
       if (res.ok) {
-        // Success popup
         showPopup("Success!", "Teacher added successfully!", "success");
 
         // Reset form
@@ -145,6 +166,8 @@ export default function TeacherForm({
           address: "",
           bloodType: "",
           gender: "MALE",
+          password: "",
+          confirmPassword: "",
         });
         setErrors({});
 
@@ -160,7 +183,7 @@ export default function TeacherForm({
         }
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error:", error);
       showPopup("Error", "Network error. Please try again.", "error");
     } finally {
       setLoading(false);
@@ -291,17 +314,72 @@ export default function TeacherForm({
           name="gender"
           value={formData.gender}
           onChange={handleChange}
-          className={`border p-2 w-full rounded ${errors.gender ? 'border-red-500' : 'border-gray-300'}`}
+          className="border p-2 w-full rounded border-gray-300"
         >
           <option value="MALE">MALE</option>
           <option value="FEMALE">FEMALE</option>
         </select>
       </div>
 
+      {/* Password Field */}
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password *"
+          value={formData.password}
+          onChange={handleChange}
+          className={`border p-2 w-full rounded pr-10 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+        >
+          {showPassword ? (
+            <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+          ) : (
+            <EyeIcon className="h-5 w-5 text-gray-500" />
+          )}
+        </button>
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+        )}
+        <p className="text-gray-400 text-xs mt-1">
+          Password must be at least 8 characters with uppercase, lowercase, and number
+        </p>
+      </div>
+
+      {/* Confirm Password Field */}
+      <div className="relative">
+        <input
+          type={showConfirmPassword ? "text" : "password"}
+          name="confirmPassword"
+          placeholder="Confirm Password *"
+          value={formData.confirmPassword}
+          onChange={handleChange}
+          className={`border p-2 w-full rounded pr-10 ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+        />
+        <button
+          type="button"
+          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2"
+        >
+          {showConfirmPassword ? (
+            <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+          ) : (
+            <EyeIcon className="h-5 w-5 text-gray-500" />
+          )}
+        </button>
+        {errors.confirmPassword && (
+          <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>
+        )}
+      </div>
+
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-blue-300"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition disabled:bg-blue-300 w-full"
       >
         {loading ? "Saving..." : "Save Teacher"}
       </button>

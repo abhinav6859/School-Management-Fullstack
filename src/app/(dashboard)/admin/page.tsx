@@ -1,11 +1,56 @@
-import Announcements from "@/components/Announcements";
-import AttendanceChart from "@/components/AttendanceChart";
-import CountChart from "@/components/CountChart";
-import EventCalendar from "@/components/EventCalendar";
-import FinanceChart from "@/components/FinanceChart";
-import UserCard from "@/components/UserCard";
+// app/(dashboard)/dashboard/admin/page.tsx
+"use client";
 
-const AdminPage = () => {
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import UserCard from "@/components/UserCard";
+import CountChart from "@/components/CountChart";
+import AttendanceChart from "@/components/AttendanceChart";
+import FinanceChart from "@/components/FinanceChart";
+import EventCalendar from "@/components/EventCalendar";
+import Announcements from "@/components/Announcements";
+
+export default function AdminPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+
+      console.log("Admin page - Token:", !!token, "Role:", role);
+
+      if (!token || role !== "ADMIN") {
+        router.push("/sign-in");
+        return;
+      }
+
+      setLoading(false);
+    } catch (err) {
+      console.error("Error in admin page:", err);
+      setError("Failed to load admin page");
+      setLoading(false);
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-lg">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="text-lg text-red-500">{error}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 flex gap-4 flex-col md:flex-row">
       {/* LEFT */}
@@ -34,12 +79,10 @@ const AdminPage = () => {
         </div>
       </div>
       {/* RIGHT */}
-      <div className=" calendar-wrapper w-full lg:w-1/3 flex flex-col gap-8">
+      <div className="calendar-wrapper w-full lg:w-1/3 flex flex-col gap-8">
         <EventCalendar />
-        <Announcements/>
+        <Announcements />
       </div>
     </div>
   );
-};
-
-export default AdminPage;
+}
