@@ -25,6 +25,8 @@ model Teacher {
   password          String
   phone             String?
   address           String?
+   bio          String?
+  socialLinks  Json?
   gender            UserSex
   classes           Class[]
   bloodType         String?
@@ -56,6 +58,8 @@ model Student {
   sex         UserSex
   birthday    DateTime
   parentId    String
+  bio          String?
+  socialLinks  Json?
   gradeId     Int
   classId     Int
   createdAt   DateTime     @default(now())
@@ -76,6 +80,8 @@ model Parent {
   email     String    @unique
   password  String
   phone     String
+  bio          String?
+  socialLinks  Json?
   address   String?
   createdAt DateTime  @default(now())
   students  Student[]

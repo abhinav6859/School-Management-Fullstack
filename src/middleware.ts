@@ -36,6 +36,32 @@ export async function middleware(request: NextRequest) {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET || "your-secret-key");
     const { payload } = await jwtVerify(token, secret);
     const role = payload.role as string;
+    const routePermissions: Record<string, string[]> = {
+  "/list/teachers": ["ADMIN"],
+  "/list/subjects": ["ADMIN"],
+
+  "/list/students": ["ADMIN", "TEACHER"],
+  "/list/parents": ["ADMIN", "TEACHER"],
+  "/list/classes": ["ADMIN", "TEACHER"],
+  "/list/lessons": ["ADMIN", "TEACHER"],
+
+  "/list/exams": ["ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/list/assignments": ["ADMIN", "TEACHER", "STUDENT"],
+  "/list/results": ["ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/list/attendance": ["ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/list/events": ["ADMIN", "TEACHER", "STUDENT", "PARENT"],
+  "/list/announcements": ["ADMIN", "TEACHER", "STUDENT", "PARENT"],
+};
+
+for (const [route, allowedRoles] of Object.entries(routePermissions)) {
+  if (path.startsWith(route)) {
+    if (!allowedRoles.includes(role)) {
+      return NextResponse.redirect(
+        new URL(`/${role.toLowerCase()}`, request.url)
+      );
+    }
+  }
+}
     console.log("Decoded token - Role:", role);
 
     // Extract the role from the URL path

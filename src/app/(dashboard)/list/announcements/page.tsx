@@ -1,121 +1,96 @@
-// import { announcementsData, role } from "@/lib/data";
-// import Image from "next/image";
-// import Pagination from "@/components/Pagination";
-// import Table from "@/components/Table";
-
-// type Announcement = {
-//   id: number;
-//   title: string;
-//   class: string;
-//   date: string;
-// };
-
-// const columns = [
-//   {
-//     header: "Title",
-//     accessor: "title",
-//   },
-//   {
-//     header: "Class",
-//     accessor: "class",
-//   },
-//   {
-//     header: "Date",
-//     accessor: "date",
-//     className: "hidden md:table-cell",
-//   },
-//   {
-//     header: "Actions",
-//     accessor: "action",
-//   },
-// ];
-
-// const AnnouncementListPage = () => {
-//   const renderRow = (item: Announcement) => (
-//     <tr
-//       key={item.id}
-//       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-//     >
-//       <td className="flex items-center gap-4 p-4">{item.title}</td>
-//       <td>{item.class}</td>
-//       <td className="hidden md:table-cell">{item.date}</td>
-//       <td>
-//         <div className="flex items-center gap-2">
-//           {role === "admin" && (
-//             <>
-//               {/* <FormModal table="announcement" type="update" data={item} />
-//               <FormModal table="announcement" type="delete" id={item.id} /> */}
-//             </>
-//           )}
-//         </div>
-//       </td>
-//     </tr>
-//   );
-
-//   return (
-//     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-//       {/* TOP */}
-//       <div className="flex items-center justify-between">
-//         <h1 className="hidden md:block text-lg font-semibold">
-//           All Announcements
-//         </h1>
-//         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-//           <div className="flex items-center gap-4 self-end">
-//             <button
-//               aria-label="Filter announcements"
-//               className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow"
-//             >
-//               <Image src="/filter.png" alt="" width={14} height={14} />
-//             </button>
-//             <button
-//               aria-label="Sort announcements"
-//               className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow"
-//             >
-//               <Image src="/sort.png" alt="" width={14} height={14} />
-//             </button>
-//             {/* {role === "admin" && (
-//               <FormModal table="announcement" type="create" />
-//             )} */}
-//           </div>
-//         </div>
-//       </div>
-//       {/* LIST */}
-//       <Table columns={columns} renderRow={renderRow} data={announcementsData} />
-//       {/* PAGINATION */}
-//       <Pagination />
-//     </div>
-//   );
-// };
-
-// export default AnnouncementListPage;
-
-
-
+// app/(protected)/list/announcements/page.tsx
 "use client";
 
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import AnnouncementForm from "@/components/forms/AnnouncementForm";
-
 import AnnouncementList from "@/components/list/AnnouncementList";
+import toast from "react-hot-toast";
 
 export default function AnnouncementsPage() {
-  const [refresh, setRefresh] =
-    useState(0);
+  const [refresh, setRefresh] = useState(0);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+    setLoading(false);
+  }, []);
+
+  // Check if user can create announcements (ADMIN and TEACHER)
+  const canCreateAnnouncement = userRole === "ADMIN" || userRole === "TEACHER";
+
+  // If still loading, show skeleton
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-10">
-      <AnnouncementForm
-        onAnnouncementAdded={() =>
-          setRefresh(
-            (prev) => prev + 1
-          )
-        }
-      />
+    <div className="max-w-7xl mx-auto p-4 md:p-8">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <span>📢</span> Announcements
+              <span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                {canCreateAnnouncement ? "Admin/Teacher" : "Student/Parent"}
+              </span>
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              {canCreateAnnouncement 
+                ? "Create and manage important announcements" 
+                : "Stay updated with latest announcements"}
+            </p>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="flex gap-3">
+            <div className="bg-purple-50 px-4 py-2 rounded-lg border border-purple-200">
+              <div className="text-xs text-purple-600 font-medium">Total</div>
+              <div className="text-lg font-bold text-purple-700">--</div>
+            </div>
+            <div className="bg-blue-50 px-4 py-2 rounded-lg border border-blue-200">
+              <div className="text-xs text-blue-600 font-medium">Recent</div>
+              <div className="text-lg font-bold text-blue-700">--</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <AnnouncementList
-        refresh={refresh}
-      />
+      {/* Announcement Form - Only for ADMIN and TEACHER */}
+      {canCreateAnnouncement ? (
+        <div className="mb-8">
+          <AnnouncementForm
+            onAnnouncementAdded={() => setRefresh((prev) => prev + 1)}
+          />
+        </div>
+      ) : (
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">👀</span>
+            <div>
+              <h3 className="font-semibold text-purple-800">View Only Mode</h3>
+              <p className="text-sm text-purple-700">
+                You can view all announcements and stay informed.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Announcement List */}
+      <AnnouncementList refresh={refresh} />
     </div>
   );
 }

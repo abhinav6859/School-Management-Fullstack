@@ -1,123 +1,80 @@
-// import FormModal from "@/components/FormModal";
-// import Pagination from "@/components/Pagination";
-// import Table from "@/components/Table";
-// import TableSearch from "@/components/TableSearch";
-// import { examsData, role } from "@/lib/data";
-// import Image from "next/image";
-
-// type Exam = {
-//   id: number;
-//   subject: string;
-//   class: string;
-//   teacher: string;
-//   date: string;
-// };
-
-// const columns = [
-//   {
-//     header: "Subject Name",
-//     accessor: "name",
-//   },
-//   {
-//     header: "Class",
-//     accessor: "class",
-//   },
-//   {
-//     header: "Teacher",
-//     accessor: "teacher",
-//     className: "hidden md:table-cell",
-//   },
-//   {
-//     header: "Date",
-//     accessor: "date",
-//     className: "hidden md:table-cell",
-//   },
-//   {
-//     header: "Actions",
-//     accessor: "action",
-//   },
-// ];
-
-// const ExamListPage = () => {
-//   const renderRow = (item: Exam) => (
-//     <tr
-//       key={item.id}
-//       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
-//     >
-//       <td className="flex items-center gap-4 p-4">{item.subject}</td>
-//       <td>{item.class}</td>
-//       <td className="hidden md:table-cell">{item.teacher}</td>
-//       <td className="hidden md:table-cell">{item.date}</td>
-//       <td>
-//         <div className="flex items-center gap-2">
-//           {(role === "admin" || role === "teacher") && (
-//             <>
-//               <FormModal table="exam" type="update" data={item} />
-//               <FormModal table="exam" type="delete" id={item.id} />
-//             </>
-//           )}
-//         </div>
-//       </td>
-//     </tr>
-//   );
-
-//   return (
-//     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-//       {/* TOP */}
-//       <div className="flex items-center justify-between">
-//         <h1 className="hidden md:block text-lg font-semibold">All Exams</h1>
-//         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
-//           <TableSearch />
-//           <div className="flex items-center gap-4 self-end">
-//             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-//               <Image src="/filter.png" alt="" width={14} height={14} />
-//             </button>
-//             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-//               <Image src="/sort.png" alt="" width={14} height={14} />
-//             </button>
-//             {role === "admin" || role === "teacher" && <FormModal table="exam" type="create" />}
-//           </div>
-//         </div>
-//       </div>
-//       {/* LIST */}
-//       <Table columns={columns} renderRow={renderRow} data={examsData} />
-//       {/* PAGINATION */}
-//       <Pagination />
-//     </div>
-//   );
-// };
-
-// export default ExamListPage;
-
 
 
 "use client";
 
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import ExamForm from "@/components/forms/ExamForm";
 import ExamList from "@/components/list/ExamList";
 import Pagination from "@/components/Pagination";
 
-
 export default function ExamsPage() {
   const [refresh, setRefresh] = useState(0);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    
+    const role = localStorage.getItem("role");
+    setUserRole(role);
+    setLoading(false);
+  }, []);
+
+  // Check if user can create exams
+  const canCreateExam = userRole === "ADMIN" || userRole === "TEACHER";
+
+  // If still loading, show skeleton
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto p-4 md:p-10">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-48 mb-6"></div>
+          <div className="space-y-4">
+            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-64 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-10">
-      <ExamForm
-        onExamAdded={() =>
-          setRefresh((prev) => prev + 1)
-        }
-      />
+    <div className="max-w-6xl mx-auto p-4 md:p-10">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Exam Management</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          {canCreateExam 
+            ? "Create and manage exams for your classes" 
+            : "View exams and your results"}
+        </p>
+      </div>
 
+      {/* Exam Form - Only for ADMIN and TEACHER */}
+      {canCreateExam ? (
+        <ExamForm
+          onExamAdded={() => setRefresh((prev) => prev + 1)}
+        />
+      ) : (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">📚</span>
+            <div>
+              <h3 className="font-semibold text-blue-800">Student View</h3>
+              <p className="text-sm text-blue-700">
+                You can view exams and check your results here.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Exam List */}
       <ExamList refresh={refresh} />
 
-
-
-     
-      {/* PAGINATION */}
-    <Pagination />
+      {/* Pagination */}
+      <div className="mt-6">
+        <Pagination />
+      </div>
     </div>
   );
 }

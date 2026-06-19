@@ -23,7 +23,7 @@ export async function POST(request: Request) {
         username: true,
         email: true,
         password: true,
-        role: true,
+        
         // Add any other fields you need
       },
     });
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           username: true,
           email: true,
           password: true,
-          role: true,
+          
           firstName: true,
           lastName: true,
           // Add any other fields you need
@@ -57,7 +57,7 @@ export async function POST(request: Request) {
           username: true,
           email: true,
           password: true,
-          role: true,
+          
           firstName: true,
           lastName: true,
         },
