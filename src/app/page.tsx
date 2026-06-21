@@ -172,7 +172,9 @@ export default function HomePage() {
             </div>
 
             <div className="hidden lg:flex items-center gap-3">
-              <button className={`p-2 rounded-lg transition-colors ${isScrolled ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-white'}`}>
+              <button 
+              aria-label=" User"
+              className={`p-2 rounded-lg transition-colors ${isScrolled ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-white'}`}>
                 <Bell className="w-5 h-5" />
               </button>
               <Link

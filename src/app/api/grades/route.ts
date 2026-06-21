@@ -5,9 +5,15 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const grades = await prisma.grade.findMany({
-      include: {
-        classes: true,
-        students: true,
+      select: {
+        id: true,
+        level: true,
+        _count: {
+          select: {
+            classes: true,
+            students: true,
+          },
+        },
       },
       orderBy: {
         level: "asc",
@@ -16,6 +22,8 @@ export async function GET() {
 
     return NextResponse.json(grades);
   } catch (error) {
+    console.error(error);
+
     return NextResponse.json(
       { message: "Failed to fetch grades" },
       { status: 500 }
@@ -26,6 +34,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     authorize(req, ["ADMIN"]);
+
     const body = await req.json();
 
     const grade = await prisma.grade.create({

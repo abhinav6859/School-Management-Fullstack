@@ -14,11 +14,138 @@ const profileUpdateSchema = z.object({
   }).optional(),
 });
 
+// 🚀 SPEED OPTIMIZATION: Cache profile data for 5 minutes
+const profileCache = new Map();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+function getCachedProfile(key: string) {
+  const cached = profileCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedProfile(key: string, data: any) {
+  profileCache.set(key, {
+    data,
+    timestamp: Date.now(),
+  });
+}
+
+function clearProfileCache(userId: string) {
+  profileCache.delete(userId);
+  // Also clear "all" cache
+  profileCache.delete("all");
+}
+
+// 🚀 SPEED OPTIMIZATION: Select only needed fields
+const adminSelect = {
+  id: true,
+  username: true,
+  email: true,
+  role: true,
+  createdAt: true,
+};
+
+const teacherSelect = {
+  id: true,
+  username: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  address: true,
+  bio: true,
+  socialLinks: true,
+  gender: true,
+  bloodType: true,
+  birthday: true,
+  role: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
+const studentSelect = {
+  id: true,
+  username: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  address: true,
+  bio: true,
+  socialLinks: true,
+  bloodType: true,
+  sex: true,
+  birthday: true,
+  createdAt: true,
+  updatedAt: true,
+  grade: { 
+    select: { 
+      level: true 
+    } 
+  },
+  class: { 
+    select: { 
+      id: true, 
+      name: true 
+    } 
+  },
+  parent: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      email: true,
+    },
+  },
+};
+
+const parentSelect = {
+  id: true,
+  username: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  address: true,
+  bio: true,
+  socialLinks: true,
+  createdAt: true,
+  updatedAt: true,
+  students: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      class: { 
+        select: { 
+          name: true 
+        } 
+      },
+    },
+  },
+};
+
 export async function GET(request: NextRequest) {
   try {
     const user = await authorize(request, ["ADMIN", "TEACHER", "STUDENT", "PARENT"]);
     const url = new URL(request.url);
     const userId = url.searchParams.get('userId');
+    
+    // 🚀 SPEED OPTIMIZATION: Check cache first
+    const cacheKey = userId || user.id;
+    const cachedProfile = getCachedProfile(cacheKey);
+    if (cachedProfile) {
+      return NextResponse.json(cachedProfile, {
+        headers: {
+          'Cache-Control': 'private, max-age=300', // 5 minutes
+        },
+      });
+    }
     
     // If admin is viewing another user's profile
     if (user.role === "ADMIN" && userId) {
@@ -27,17 +154,10 @@ export async function GET(request: NextRequest) {
       // Check Admin first
       profile = await prisma.admin.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
-          createdAt: true,
-        },
+        select: adminSelect,
       });
       if (profile) {
-        // Admin doesn't have bio/socialLinks, so just return basic info
-        return NextResponse.json({ 
+        const result = { 
           success: true, 
           ...profile, 
           isAdminView: true,
@@ -45,97 +165,58 @@ export async function GET(request: NextRequest) {
           lastName: "",
           bio: null,
           socialLinks: null
+        };
+        setCachedProfile(cacheKey, result);
+        return NextResponse.json(result, {
+          headers: {
+            'Cache-Control': 'private, max-age=300',
+          },
         });
       }
       
       // Check Teacher
       profile = await prisma.teacher.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          gender: true,
-          bloodType: true,
-          birthday: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: teacherSelect,
       });
       if (profile) {
-        return NextResponse.json({ success: true, ...profile, isAdminView: true });
+        const result = { success: true, ...profile, isAdminView: true };
+        setCachedProfile(cacheKey, result);
+        return NextResponse.json(result, {
+          headers: {
+            'Cache-Control': 'private, max-age=300',
+          },
+        });
       }
       
       // Check Student
       profile = await prisma.student.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          bloodType: true,
-          sex: true,
-          birthday: true,
-          createdAt: true,
-          updatedAt: true,
-          grade: { select: { level: true } },
-          class: { select: { id: true, name: true } },
-          parent: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              phone: true,
-              email: true,
-            },
-          },
-        },
+        select: studentSelect,
       });
       if (profile) {
-        return NextResponse.json({ success: true, ...profile, role: "STUDENT", isAdminView: true });
+        const result = { success: true, ...profile, role: "STUDENT", isAdminView: true };
+        setCachedProfile(cacheKey, result);
+        return NextResponse.json(result, {
+          headers: {
+            'Cache-Control': 'private, max-age=300',
+          },
+        });
       }
       
       // Check Parent
       profile = await prisma.parent.findUnique({
         where: { id: userId },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          createdAt: true,
-          updatedAt: true,
-          students: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              class: { select: { name: true } },
-            },
-          },
-        },
+        select: parentSelect,
       });
       if (profile) {
-        return NextResponse.json({ success: true, ...profile, role: "PARENT", isAdminView: true });
+        const result = { success: true, ...profile, role: "PARENT", isAdminView: true };
+        setCachedProfile(cacheKey, result);
+        return NextResponse.json(result, {
+          headers: {
+            'Cache-Control': 'private, max-age=300',
+          },
+        });
       }
       
       return NextResponse.json(
@@ -150,17 +231,10 @@ export async function GET(request: NextRequest) {
     if (user.role === "ADMIN") {
       profile = await prisma.admin.findUnique({
         where: { id: user.id },
-        select: {
-          id: true,
-          username: true,
-          email: true,
-          role: true,
-          createdAt: true,
-        },
+        select: adminSelect,
       });
-      // Admin doesn't have bio/socialLinks
       if (profile) {
-        return NextResponse.json({
+        const result = {
           success: true,
           ...profile,
           firstName: profile.username,
@@ -168,59 +242,23 @@ export async function GET(request: NextRequest) {
           bio: "",
           socialLinks: null,
           isAdminView: false,
+        };
+        setCachedProfile(cacheKey, result);
+        return NextResponse.json(result, {
+          headers: {
+            'Cache-Control': 'private, max-age=300',
+          },
         });
       }
     } else if (user.role === "TEACHER") {
       profile = await prisma.teacher.findUnique({
         where: { id: user.id },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          gender: true,
-          bloodType: true,
-          birthday: true,
-          role: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: teacherSelect,
       });
     } else if (user.role === "STUDENT") {
       profile = await prisma.student.findUnique({
         where: { id: user.id },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          bloodType: true,
-          sex: true,
-          birthday: true,
-          createdAt: true,
-          updatedAt: true,
-          grade: { select: { level: true } },
-          class: { select: { id: true, name: true } },
-          parent: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              phone: true,
-              email: true,
-            },
-          },
-        },
+        select: studentSelect,
       });
       if (profile) {
         profile = { ...profile, role: "STUDENT" };
@@ -228,28 +266,7 @@ export async function GET(request: NextRequest) {
     } else if (user.role === "PARENT") {
       profile = await prisma.parent.findUnique({
         where: { id: user.id },
-        select: {
-          id: true,
-          username: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-          phone: true,
-          address: true,
-          bio: true,
-          socialLinks: true,
-          createdAt: true,
-          updatedAt: true,
-          students: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              class: { select: { name: true } },
-            },
-          },
-        },
+        select: parentSelect,
       });
       if (profile) {
         profile = { ...profile, role: "PARENT" };
@@ -263,10 +280,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ 
+    const result = { 
       success: true, 
       ...profile, 
       isAdminView: false 
+    };
+    
+    setCachedProfile(cacheKey, result);
+    
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'private, max-age=300', // 5 minutes
+      },
     });
   } catch (error: any) {
     console.error("Error fetching profile:", error);
@@ -305,6 +330,14 @@ export async function PUT(request: NextRequest) {
       updateData.socialLinks = Object.keys(cleanedLinks).length > 0 ? cleanedLinks : null;
     }
 
+    // 🚀 SPEED OPTIMIZATION: Update only what changed
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, message: "No data to update" },
+        { status: 400 }
+      );
+    }
+
     // Update profile based on role
     const modelMap: Record<string, any> = {
       TEACHER: prisma.teacher,
@@ -324,6 +357,9 @@ export async function PUT(request: NextRequest) {
       where: { id: user.id },
       data: updateData,
     });
+
+    // 🚀 SPEED OPTIMIZATION: Clear cache after update
+    clearProfileCache(user.id);
 
     return NextResponse.json({
       success: true,

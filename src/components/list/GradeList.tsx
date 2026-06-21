@@ -1,19 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 interface Grade {
   id: number;
   level: number;
-
-  classes: {
-    id: number;
-    name: string;
-  }[];
-
-  students: {
-    id: string;
-  }[];
+  _count: {
+    classes: number;
+    students: number;
+  };
 }
 
 export default function GradeList({
@@ -21,21 +16,48 @@ export default function GradeList({
 }: {
   refresh: number;
 }) {
-  const [grades, setGrades] = useState<
-    Grade[]
-  >([]);
+  const [grades, setGrades] = useState<Grade[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const fetchGrades = async () => {
-    const res = await fetch("/api/grades");
+  const fetchGrades = useCallback(async () => {
+    try {
+      setLoading(true);
 
-    const data = await res.json();
+      const res = await fetch("/api/grades", {
+        cache: "no-store",
+      });
 
-    setGrades(data);
-  };
+      if (!res.ok) {
+        throw new Error("Failed to fetch grades");
+      }
+
+      const data = await res.json();
+
+      setGrades(data);
+    } catch (error) {
+      console.error("Error fetching grades:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchGrades();
-  }, [refresh]);
+  }, [fetchGrades, refresh]);
+
+  if (loading) {
+    return (
+      <div className="mt-10">
+        <h2 className="text-2xl font-bold mb-4">
+          Grade List
+        </h2>
+
+        <div className="text-gray-500">
+          Loading grades...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-10">
@@ -43,29 +65,35 @@ export default function GradeList({
         Grade List
       </h2>
 
-      <div className="grid gap-4">
-        {grades.map((grade) => (
-          <div
-            key={grade.id}
-            className="border p-4 rounded-lg shadow"
-          >
-            <p>
-              <strong>Grade:</strong>{" "}
-              {grade.level}
-            </p>
+      {grades.length === 0 ? (
+        <div className="text-gray-500">
+          No grades found
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {grades.map((grade) => (
+            <div
+              key={grade.id}
+              className="border p-4 rounded-lg shadow bg-white"
+            >
+              <p>
+                <strong>Grade:</strong>{" "}
+                {grade.level}
+              </p>
 
-            <p>
-              <strong>Total Classes:</strong>{" "}
-              {grade.classes.length}
-            </p>
+              <p>
+                <strong>Total Classes:</strong>{" "}
+                {grade._count.classes}
+              </p>
 
-            <p>
-              <strong>Total Students:</strong>{" "}
-              {grade.students.length}
-            </p>
-          </div>
-        ))}
-      </div>
+              <p>
+                <strong>Total Students:</strong>{" "}
+                {grade._count.students}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

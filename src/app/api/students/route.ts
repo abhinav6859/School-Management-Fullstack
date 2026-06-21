@@ -96,7 +96,7 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: validatedFields.error.errors[0].message,
+          message: validatedFields.error.issues[0].message,
           errors: validatedFields.error.flatten().fieldErrors,
         },
         { status: 400 }
@@ -204,7 +204,7 @@ export async function PUT(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: validatedFields.error.errors[0].message,
+          message: validatedFields.error.issues[0].message,
           errors: validatedFields.error.flatten().fieldErrors,
         },
         { status: 400 }

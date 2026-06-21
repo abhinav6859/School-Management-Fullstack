@@ -178,7 +178,9 @@ const renderRow = (item: TeacherListType) => (
     <td className="px-2">
       <div className="flex items-center justify-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
-          <button className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-purple-100 hover:scale-110 transition-all duration-200 group/btn">
+          <button 
+          aria-label="View Teacher"
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-purple-100 hover:scale-110 transition-all duration-200 group/btn">
             <svg className="w-4 h-4 text-gray-600 group-hover/btn:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -413,7 +415,7 @@ export default function TeacherList({
                 <span className="font-semibold text-gray-700">{totalCount}</span> teachers
                 {searchTerm && (
                   <span className="ml-2 text-purple-600">
-                    (filtered by: "{searchTerm}")
+                    (filtered by:  &quot;{searchTerm}&quot;)
                   </span>
                 )}
               </div>

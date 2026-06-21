@@ -1,7 +1,7 @@
 // app/(protected)/profile/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -50,13 +50,31 @@ export default function ProfilePage() {
     website: "",
   });
 
-  useEffect(() => {
-    fetchProfile();
-  }, [userId]);
-
-  const fetchProfile = async () => {
+  // 🚀 SPEED OPTIMIZATION: Use useCallback to prevent unnecessary re-renders
+  const fetchProfile = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // Check if we have cached profile data
+      const cachedProfile = localStorage.getItem("cachedProfile");
+      const cacheTimestamp = localStorage.getItem("profileCacheTimestamp");
+      const cacheAge = cacheTimestamp ? Date.now() - parseInt(cacheTimestamp) : Infinity;
+      
+      // Use cache if less than 5 minutes old
+      if (cachedProfile && cacheAge < 5 * 60 * 1000 && !userId) {
+        const data = JSON.parse(cachedProfile);
+        setProfile(data);
+        setBio(data.bio || "");
+        setSocialLinks({
+          linkedin: data.socialLinks?.linkedin || "",
+          twitter: data.socialLinks?.twitter || "",
+          github: data.socialLinks?.github || "",
+          website: data.socialLinks?.website || "",
+        });
+        setLoading(false);
+        return;
+      }
+      
       const url = userId ? `/api/profile?userId=${userId}` : "/api/profile";
       const res = await fetch(url);
       
@@ -79,13 +97,23 @@ export default function ProfilePage() {
         github: data.socialLinks?.github || "",
         website: data.socialLinks?.website || "",
       });
+      
+      // Cache profile data
+      if (!userId) {
+        localStorage.setItem("cachedProfile", JSON.stringify(data));
+        localStorage.setItem("profileCacheTimestamp", Date.now().toString());
+      }
     } catch (error) {
       console.error("Failed to fetch profile:", error);
       toast.error(error instanceof Error ? error.message : "Failed to load profile data");
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, router]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -109,14 +137,27 @@ export default function ProfilePage() {
         throw new Error(data.message || "Failed to update profile");
       }
       
-      setProfile(prev => ({
-        ...prev!,
+      const updatedProfile = {
+        ...profile!,
         bio: bio || undefined,
         socialLinks: Object.values(socialLinks).some(v => v) ? socialLinks : undefined,
-      }));
+      };
+      
+      setProfile(updatedProfile);
+      
+      // Update cache
+      localStorage.setItem("cachedProfile", JSON.stringify(updatedProfile));
+      localStorage.setItem("profileCacheTimestamp", Date.now().toString());
+      
+      // Also update userName in localStorage for Navbar
+      if (updatedProfile.firstName && updatedProfile.lastName) {
+        localStorage.setItem("userName", `${updatedProfile.firstName} ${updatedProfile.lastName}`);
+      }
       
       setIsEditing(false);
       toast.success("Profile updated successfully!");
+      
+      // Only refetch if there might be other changes
       await fetchProfile();
     } catch (error) {
       console.error("Failed to update profile:", error);
@@ -128,7 +169,42 @@ export default function ProfilePage() {
 
   const canEdit = !profile?.isAdminView && profile?.role !== "ADMIN";
 
+  // 🚀 SPEED OPTIMIZATION: Show cached data immediately if available
   if (loading) {
+    const cachedProfile = localStorage.getItem("cachedProfile");
+    if (cachedProfile && !userId) {
+      const data = JSON.parse(cachedProfile);
+      // Show cached data while loading
+      return (
+        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="relative h-48 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+              <div className="px-6 sm:px-8 pb-8">
+                <div className="flex flex-col sm:flex-row items-center gap-6 -mt-16 mb-6">
+                  <div className="w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                    <span className="text-4xl font-bold text-white">
+                      {data.firstName?.[0] || data.username?.[0] || "U"}
+                    </span>
+                  </div>
+                  <div className="text-center sm:text-left flex-1">
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.username}
+                    </h2>
+                    <p className="text-gray-500 text-sm mt-1">Loading profile details...</p>
+                  </div>
+                </div>
+                <div className="animate-pulse space-y-4">
+                  <div className="h-20 bg-gray-100 rounded-xl"></div>
+                  <div className="h-20 bg-gray-100 rounded-xl"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -270,9 +346,11 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            {/* Edit Form or View Mode */}
+            {/* Rest of your existing JSX */}
+            {/* Edit Form or View Mode - Keep your existing code here */}
             {isEditing ? (
               <form onSubmit={handleSave} className="space-y-6">
+                {/* Your existing edit form JSX */}
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -406,6 +484,7 @@ export default function ProfilePage() {
                       <span>🏆</span> {profile.role} Details
                     </h3>
                     <div className="space-y-3">
+                      {/* Your existing role-specific details */}
                       {profile.role === "STUDENT" && (
                         <>
                           {profile.sex && (
@@ -503,7 +582,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Bio Section - Hide for Admin */}
+                {/* Bio Section */}
                 {profile.role !== "ADMIN" && (
                   <div className="mt-6">
                     <div className="bg-gray-50 rounded-xl p-6">
@@ -539,7 +618,7 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Social Links - Hide for Admin */}
+                {/* Social Links */}
                 {profile.role !== "ADMIN" && (
                   <div className="mt-6">
                     <div className="bg-gray-50 rounded-xl p-6">

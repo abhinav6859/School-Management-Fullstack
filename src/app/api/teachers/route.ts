@@ -6,6 +6,7 @@ import { ITEM_PER_PAGE } from "@/lib/settings";
 import { authorize } from "@/lib/authorize";
 import bcrypt from "bcryptjs";
 
+
 // Zod validation schema for API with password
 const teacherApiSchema = z.object({
   username: z.string().min(3).max(20),
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search") || "";
     const all = searchParams.get("all") === "true"; // Add this
     
-    // Build where clause for search
+    
     const whereClause = search ? {
       OR: [
         { firstName: { contains: search, mode: 'insensitive' } },
@@ -37,7 +38,6 @@ export async function GET(request: NextRequest) {
       ]
     } : {};
     
-    // If all=true, return all teachers without pagination
     if (all) {
       const teachers = await prisma.teacher.findMany({
         where: whereClause,
@@ -115,11 +115,11 @@ export async function POST(req: Request) {
     const validationResult = teacherApiSchema.safeParse(body);
     
     if (!validationResult.success) {
-      const firstError = validationResult.error.errors[0];
+      const firstError = validationResult.error.issues[0];
       return NextResponse.json(
         { 
           message: firstError.message,
-          errors: validationResult.error.errors 
+          errors: validationResult.error.issues 
         },
         { status: 400 }
       );

@@ -24,6 +24,7 @@
     "moment": "^2.30.1",
     "next": "14.2.5",
     "pg": "^8.21.0",
+    "razorpay": "^2.9.6",
     "react": "^18",
     "react-big-calendar": "^1.19.4",
     "react-calendar": "^6.0.1",

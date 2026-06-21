@@ -80,7 +80,7 @@ export default function ParentList({
             </h2>
           </div>
           <p className="text-gray-600 ml-12">
-            Manage all parents and their children's information
+            Manage all parents and their children&apos;s information
           </p>
         </div>
 
