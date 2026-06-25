@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// app/api/teachers/route.ts (Updated POST handler)
+
 export async function POST(req: Request) {
   try {
     // Authorize the request - check if user is ADMIN
