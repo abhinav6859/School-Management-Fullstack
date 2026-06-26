@@ -2,7 +2,9 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 interface ProfileData {
@@ -34,7 +36,8 @@ interface ProfileData {
   students?: { id: string; firstName: string; lastName: string; email: string; class: { name: string } }[];
 }
 
-export default function ProfilePage() {
+// Step 2: Renamed from ProfilePage to ProfileContent
+function ProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
@@ -700,5 +703,23 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Step 3: Default export with Suspense boundary
+export default function ProfilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-600 font-medium">Loading profile...</p>
+          </div>
+        </div>
+      }
+    >
+      <ProfileContent />
+    </Suspense>
   );
 }
