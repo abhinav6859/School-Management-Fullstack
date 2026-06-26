@@ -1,4 +1,3 @@
-// components/Navbar.tsx
 "use client";
 
 import Image from "next/image";
@@ -8,18 +7,32 @@ import toast from "react-hot-toast";
 
 interface NavbarProps {
   role?: "admin" | "teacher" | "student" | "parent";
+  sidebarOpen?: boolean;
+  setSidebarOpen?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Navbar = ({ role }: NavbarProps) => {
+const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const [userName, setUserName] = useState("User");
   const [userRole, setUserRole] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    // 🚀 SPEED OPTIMIZATION: Get ALL user info from localStorage - NO API CALLS
+    // Check if mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // Get user info from localStorage
     const storedRole = localStorage.getItem("role");
     const storedUserId = localStorage.getItem("userId");
     const storedName = localStorage.getItem("userName");
@@ -29,13 +42,10 @@ const Navbar = ({ role }: NavbarProps) => {
     if (storedUserId) setUserId(storedUserId);
     if (storedName) setUserName(storedName);
     
-    // Fallback: Try to get name from localStorage or use default
     if (!storedName && storedEmail) {
-      // If we have email but no name, use email prefix as name
       const emailName = storedEmail.split('@')[0];
       setUserName(emailName);
     }
-
 
     // Close profile menu on click outside
     const handleClickOutside = (e: MouseEvent) => {
@@ -47,21 +57,17 @@ const Navbar = ({ role }: NavbarProps) => {
 
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [pathname]); // Re-run when pathname changes
-
-
+  }, [pathname]);
 
   const handleLogout = () => {
-    // Clear all storage
     localStorage.removeItem("token");
     localStorage.removeItem("role");
     localStorage.removeItem("userId");
     localStorage.removeItem("userName");
     localStorage.removeItem("email");
-  localStorage.removeItem("cachedProfile");
-localStorage.removeItem("profileCacheTimestamp");
+    localStorage.removeItem("cachedProfile");
+    localStorage.removeItem("profileCacheTimestamp");
     
-    // Clear cookies
     document.cookie = "token=; path=/; max-age=0";
     document.cookie = "role=; path=/; max-age=0";
     document.cookie = "userId=; path=/; max-age=0";
@@ -101,17 +107,40 @@ localStorage.removeItem("profileCacheTimestamp");
   };
 
   return (
-    <div className="sticky top-0 z-50">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
+    <div className="sticky top-0 z-40">
+      <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
         
-        {/* 🔍 SEARCH BAR */}
-        <div className="hidden md:flex items-center gap-3 flex-1 max-w-md bg-gray-50 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-purple-400 focus-within:bg-white transition-all duration-200 border border-gray-200 hover:border-purple-300">
+        {/* Left Section - Hamburger & Logo */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Hamburger Menu Button */}
+          {setSidebarOpen && (
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-400"
+              aria-label="Toggle menu"
+            >
+              <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
+
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center">
+            <span className="font-bold text-lg sm:text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              SchooLama
+            </span>
+          </div>
+        </div>
+
+        {/* Search Bar - Desktop */}
+        <div className="hidden md:flex items-center gap-3 flex-1 max-w-md mx-4 bg-gray-50 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-purple-400 focus-within:bg-white transition-all duration-200 border border-gray-200 hover:border-purple-300">
           <Image 
             src="/search.png" 
             alt="search" 
             width={16} 
             height={16} 
-            className="opacity-60"
+            className="opacity-60 flex-shrink-0"
             loading="lazy"
           />
           <input
@@ -122,36 +151,29 @@ localStorage.removeItem("profileCacheTimestamp");
           <kbd className="hidden lg:block text-xs text-gray-400 bg-gray-200 px-2 py-0.5 rounded">⌘K</kbd>
         </div>
 
-        {/* Mobile Logo */}
-        <div className="md:hidden flex items-center">
-          <span className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            LMS
-          </span>
-        </div>
-
-        {/* 🔔 RIGHT SECTION */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        {/* Right Section */}
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           
-          {/* 👤 USER INFO */}
+          {/* User Info - Hidden on very small screens */}
           <div className="hidden sm:flex flex-col text-right">
-            <span className="text-sm font-semibold text-gray-700 truncate max-w-[120px]">
+            <span className="text-xs sm:text-sm font-semibold text-gray-700 truncate max-w-[80px] sm:max-w-[120px]">
               {userName}
             </span>
-            <span className="text-xs text-gray-400 uppercase tracking-wider">
+            <span className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-wider">
               {userRole || "User"}
             </span>
           </div>
 
-          {/* 🖼 AVATAR with Dropdown */}
+          {/* Avatar with Dropdown */}
           <div className="relative profile-menu-container">
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-              className="flex items-center gap-2 focus:outline-none group"
+              className="flex items-center gap-1 sm:gap-2 focus:outline-none group"
               aria-label="Profile menu"
             >
               <div className="relative">
                 <div className={`
-                  w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm
+                  w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center font-semibold text-xs sm:text-sm
                   border-2 transition-all duration-200
                   ${getRoleColor()}
                   ${isProfileMenuOpen ? 'ring-2 ring-purple-400 ring-offset-2' : 'group-hover:border-purple-400'}
@@ -159,13 +181,13 @@ localStorage.removeItem("profileCacheTimestamp");
                   {getInitials()}
                 </div>
 
-                {/* Online dot */}
-                <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+                {/* Online dot - Hidden on very small screens */}
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
 
-              {/* Chevron */}
+              {/* Chevron - Hidden on very small screens */}
               <svg className={`
-                w-4 h-4 text-gray-400 transition-transform duration-200
+                hidden sm:block w-3 h-3 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200
                 ${isProfileMenuOpen ? 'rotate-180' : ''}
               `} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -174,7 +196,7 @@ localStorage.removeItem("profileCacheTimestamp");
 
             {/* Dropdown Menu */}
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-slideDown">
+              <div className="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-slideDown">
                 {/* User Info Header */}
                 <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-100">
                   <div className="flex items-center gap-3">
@@ -201,10 +223,7 @@ localStorage.removeItem("profileCacheTimestamp");
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                     <span>My Profile</span>
-                    <span className="ml-auto text-xs text-gray-400">⌘P</span>
                   </button>
-
-               
 
                   <div className="border-t border-gray-100 my-1"></div>
 
@@ -216,7 +235,6 @@ localStorage.removeItem("profileCacheTimestamp");
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
                     <span>Sign Out</span>
-                    <span className="ml-auto text-xs text-gray-400">⌘Q</span>
                   </button>
                 </div>
               </div>

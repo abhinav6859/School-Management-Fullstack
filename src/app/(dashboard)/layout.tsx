@@ -1,62 +1,89 @@
-// app/(dashboard)/layout.tsx
 "use client";
 
-import Menu from "@/components/Menu";
-import Navbar from "@/components/Navbar";
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Menu from "@/components/Menu";
+import Navbar from "@/components/Navbar";
+
+export type Role = "admin" | "teacher" | "student" | "parent";
 
 export default function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const router = useRouter();
-  const [role, setRole] = useState<"admin" | "teacher" | "student" | "parent">("admin");
+
   const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState<Role>("admin");
+
+  // Sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Get user info from localStorage
-    const userRole = localStorage.getItem("role");
     const token = localStorage.getItem("token");
+    const userRole = localStorage.getItem("role");
 
     if (!token || !userRole) {
-      router.push("/sign-in");
+      router.replace("/sign-in");
       return;
     }
 
-    // Set role (convert to lowercase for Menu component)
-    setRole(userRole.toLowerCase() as any);
+    setRole(userRole.toLowerCase() as Role);
     setLoading(false);
   }, [router]);
 
+  // Close sidebar on resize to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="text-lg font-semibold">
+          Loading...
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex">
-      {/* LEFT */}
-      <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] p-4">
-        <Link
-          href="/"
-          className="flex items-center justify-center lg:justify-start gap-2"
-        >
-          <Image src="/logo.png" alt="logo" width={32} height={32} />
-          <span className="hidden lg:block font-bold">SchooLama</span>
-        </Link>
-        <Menu role={role} />
-      </div>
-      {/* RIGHT */}
-      <div className="w-[86%] md:w-[92%] lg:w-[84%] xl:w-[86%] bg-[#F7F8FA] overflow-scroll flex flex-col">
-        <Navbar role={role} />
-        {children}
+    <div className="min-h-screen bg-[#F7F8FA]">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <Menu
+        role={role}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
+
+      {/* Main */}
+      <div className="lg:ml-64 min-h-screen flex flex-col">
+        <Navbar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="max-w-7xl mx-auto">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   );

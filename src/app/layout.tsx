@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata , Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
@@ -11,6 +11,11 @@ export const metadata: Metadata = {
     icons: {
     icon: "/logo.ico", // place inside public folder
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

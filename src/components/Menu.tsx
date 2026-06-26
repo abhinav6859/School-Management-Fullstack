@@ -3,12 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Role = "admin" | "teacher" | "student" | "parent";
 
 interface MenuProps {
   role: Role;
+  sidebarOpen: boolean;
+  setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const menuItems = [
@@ -23,7 +25,7 @@ const menuItems = [
       },
       {
         icon: "/more.png",
-        label: "grades",
+        label: "Grades",
         href: "/list/grades",
         visible: ["admin", "teacher"],
       },
@@ -116,72 +118,95 @@ const menuItems = [
         href: "/settings",
         visible: ["admin", "teacher", "student", "parent"],
       },
-    
     ],
   },
 ];
 
-const Menu = ({ role }: MenuProps) => {
+export default function Menu({
+  role,
+  sidebarOpen,
+  setSidebarOpen,
+}: MenuProps) {
   const pathname = usePathname();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
 
+  // Auto-close sidebar on mobile when navigating
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <>
-      {/* Mobile Toggle */}
-      <button
-        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
-      >
-        <div className="w-6 h-5 flex flex-col justify-between">
-          <span
-            className={`h-0.5 bg-gray-700 transition-all ${
-              isMobileMenuOpen
-                ? "rotate-45 translate-y-2"
-                : ""
-            }`}
-          />
-          <span
-            className={`h-0.5 bg-gray-700 transition-all ${
-              isMobileMenuOpen ? "opacity-0" : ""
-            }`}
-          />
-          <span
-            className={`h-0.5 bg-gray-700 transition-all ${
-              isMobileMenuOpen
-                ? "-rotate-45 -translate-y-2"
-                : ""
-            }`}
-          />
-        </div>
-      </button>
-
-      {/* Overlay */}
-      {isMobileMenuOpen && (
+      {/* Mobile overlay */}
+      {sidebarOpen && isMobile && (
         <div
-          className="fixed inset-0 bg-black/40 lg:hidden z-40"
-          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed lg:relative top-0 left-0 h-screen bg-white shadow-xl lg:shadow-none z-50 transition-transform duration-300 overflow-y-auto
-        ${
-          isMobileMenuOpen
-            ? "translate-x-0"
-            : "-translate-x-full lg:translate-x-0"
-        }
-        w-64`}
+        className={`
+          fixed top-0 left-0 z-50
+          w-64 sm:w-72 h-screen
+          bg-white border-r border-gray-200
+          overflow-y-auto
+          transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0 lg:z-40
+        `}
+        style={{
+          boxShadow: sidebarOpen && isMobile ? '0 0 30px rgba(0,0,0,0.15)' : 'none'
+        }}
       >
-        <div className="p-4 mt-14 lg:mt-0">
+        {/* Close button for mobile */}
+        {isMobile && sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100 transition-colors lg:hidden"
+            aria-label="Close menu"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        )}
+
+        {/* Logo */}
+        <div className="h-16 flex items-center gap-3 px-6 border-b sticky top-0 bg-white z-10">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={36}
+            height={36}
+            className="flex-shrink-0"
+          />
+          <span className="font-bold text-lg bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            SchooLama
+          </span>
+        </div>
+
+        <div className="p-4 pb-20">
           {menuItems.map((section) => (
             <div key={section.title} className="mb-8">
-              <h3 className="text-xs uppercase font-semibold text-gray-400 mb-3 px-3">
+              <h3 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
                 {section.title}
               </h3>
 
@@ -195,27 +220,32 @@ const Menu = ({ role }: MenuProps) => {
                       <Link
                         key={item.label}
                         href={item.href}
-                        onClick={() =>
-                          setIsMobileMenuOpen(false)
-                        }
-                        className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all
-                        ${
-                          active
-                            ? "bg-sky-100 text-sky-700 font-semibold"
-                            : "text-gray-600 hover:bg-gray-100"
-                        }`}
+                        onClick={handleLinkClick}
+                        className={`
+                          flex items-center gap-3 rounded-lg px-3 py-3 
+                          transition-all duration-200
+                          hover:scale-[1.02] active:scale-[0.98]
+                          ${active
+                            ? "bg-sky-100 text-sky-700 font-semibold shadow-sm"
+                            : "text-gray-600 hover:bg-gray-100 hover:text-sky-600"
+                          }
+                        `}
                       >
                         <Image
                           src={item.icon}
                           alt={item.label}
                           width={20}
                           height={20}
+                          className="flex-shrink-0"
+                          loading="lazy"
                         />
 
-                        <span>{item.label}</span>
+                        <span className="flex-1 text-sm">
+                          {item.label}
+                        </span>
 
                         {active && (
-                          <div className="ml-auto w-1 h-6 bg-sky-500 rounded-full" />
+                          <div className="h-6 w-1 rounded-full bg-sky-500 flex-shrink-0" />
                         )}
                       </Link>
                     );
@@ -227,6 +257,4 @@ const Menu = ({ role }: MenuProps) => {
       </aside>
     </>
   );
-};
-
-export default Menu;
+}
