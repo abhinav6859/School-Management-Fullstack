@@ -39,11 +39,14 @@ export async function GET(
       );
     }
 
-    // Calculate derived stats
-    const totalStudents = teacher.supervisedClasses?.reduce(
-      (sum, classItem) => sum + (classItem.students?.length || 0),
-      0
-    ) || 0;
+ // Calculate derived stats
+const totalStudents =
+  teacher.supervisedClasses?.reduce(
+    (sum: number, classItem: any) => {
+      return sum + (classItem.students?.length || 0);
+    },
+    0
+  ) || 0;
 
     const totalClasses = teacher.supervisedClasses?.length || 0;
 
