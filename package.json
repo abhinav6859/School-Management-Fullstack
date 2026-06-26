@@ -2,12 +2,13 @@
   "name": "lama-dev-next-dashboard",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "next lint",
+  "postinstall": "prisma generate"
+},
   "dependencies": {
     "@clerk/nextjs": "^5.7.6",
     "@heroicons/react": "^2.2.0",
