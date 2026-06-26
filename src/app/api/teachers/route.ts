@@ -1,5 +1,6 @@
 // app/api/teachers/route.ts
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { ITEM_PER_PAGE } from "@/lib/settings";
@@ -29,14 +30,38 @@ export async function GET(request: NextRequest) {
     const all = searchParams.get("all") === "true"; // Add this
     
     
-    const whereClause = search ? {
-      OR: [
-        { firstName: { contains: search, mode: 'insensitive' } },
-        { lastName: { contains: search, mode: 'insensitive' } },
-        { email: { contains: search, mode: 'insensitive' } },
-        { username: { contains: search, mode: 'insensitive' } },
-      ]
-    } : {};
+ 
+
+const whereClause: Prisma.TeacherWhereInput = {};
+
+if (search) {
+  whereClause.OR = [
+    {
+      firstName: {
+        contains: search,
+        mode: Prisma.QueryMode.insensitive,
+      },
+    },
+    {
+      lastName: {
+        contains: search,
+        mode: Prisma.QueryMode.insensitive,
+      },
+    },
+    {
+      email: {
+        contains: search,
+        mode: Prisma.QueryMode.insensitive,
+      },
+    },
+    {
+      username: {
+        contains: search,
+        mode: Prisma.QueryMode.insensitive,
+      },
+    },
+  ];
+}
     
     if (all) {
       const teachers = await prisma.teacher.findMany({

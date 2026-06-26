@@ -5,35 +5,39 @@ import { useEffect, useState } from "react";
 interface Exam {
   id: number;
   title: string;
-
   lesson: {
     name: string;
   };
-
   teacher: {
     firstName: string;
     lastName: string;
   };
-
   results: {
     id: number;
   }[];
 }
 
+interface ExamListProps {
+  refresh: number;
+  page: number;
+  onTotalPagesChange: React.Dispatch<React.SetStateAction<number>>;
+}
+
 export default function ExamList({
   refresh,
-}: {
-  refresh: number;
-}) {
-  const [exams, setExams] = useState<
-    Exam[]
-  >([]);
+  page,
+  onTotalPagesChange,
+}: ExamListProps) {
+
+  // Add these two lines HERE
+  void page;
+  void onTotalPagesChange;
+
+  const [exams, setExams] = useState<Exam[]>([]);
 
   const fetchExams = async () => {
     const res = await fetch("/api/exams");
-
     const data = await res.json();
-
     setExams(data);
   };
 

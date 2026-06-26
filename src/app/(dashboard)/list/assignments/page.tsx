@@ -97,8 +97,7 @@ export default function AssignmentsPage() {
       {/* Assignment List - Pass page prop */}
       <AssignmentList 
         refresh={refresh} 
-        page={currentPage}
-        onTotalPagesChange={setTotalPages}
+       
       />
 
       {/* Pagination - Only show if there are multiple pages */}

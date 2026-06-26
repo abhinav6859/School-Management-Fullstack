@@ -41,21 +41,20 @@ const forms: Record<
     onError?: (error: string) => void
   ) => JSX.Element
 > = {
-  teacher: (type, data, onSuccess, onError) => (
+  teacher: (type, data, onSuccess) => (
     <TeacherForm
       type={type}
       data={data}
       onTeacherAdded={onSuccess}
-      onError={onError}
     />
   ),
-  student: (type, data, onSuccess, onError) => (
+  student: (type, data, onSuccess) => (
     <StudentForm 
       type={type} 
       data={data} 
       onStudentAdded={onSuccess}
-      onError={onError}
     />
+   
   ),
 };
 

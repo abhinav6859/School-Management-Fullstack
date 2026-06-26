@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // First try to find user in Admin table
-    let user = await prisma.admin.findUnique({
+   let user: any= await prisma.admin.findUnique({
       where: { username },
       select: {
         id: true,
@@ -84,14 +84,14 @@ export async function POST(request: Request) {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role || userType,
-        userType: userType, // To identify which table the user belongs to
-      },
+  const token = jwt.sign(
+  {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: userType,
+    userType,
+  },
       process.env.JWT_SECRET || "your-secret-key",
       { expiresIn: "7d" }
     );
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
     return NextResponse.json({
       token,
       user: userWithoutPassword,
-      role: user.role || userType,
+      role: userType,
     });
   } catch (error) {
     console.error("Login error:", error);
