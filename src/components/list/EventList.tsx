@@ -8,31 +8,35 @@ interface EventItem {
   description: string;
   startTime: string;
   endTime: string;
-
   class?: {
     name: string;
   };
 }
 
+interface EventListProps {
+  refresh: number;
+  page: number;
+  onTotalPagesChange: (pages: number) => void;
+}
+
 export default function EventList({
   refresh,
-}: {
-  refresh: number;
-}) {
-  const [events, setEvents] =
-    useState<EventItem[]>([]);
+  page,
+  onTotalPagesChange,
+}: EventListProps) {
+  const [events, setEvents] = useState<EventItem[]>([]);
 
   const fetchEvents = async () => {
-    const res = await fetch("/api/events");
-
+    const res = await fetch(`/api/events?page=${page}`);
     const data = await res.json();
 
-    setEvents(data);
+    setEvents(data.events);
+    onTotalPagesChange(data.totalPages);
   };
 
   useEffect(() => {
     fetchEvents();
-  }, [refresh]);
+  }, [refresh, page]);
 
   return (
     <div className="mt-10">
@@ -46,20 +50,13 @@ export default function EventList({
             key={event.id}
             className="border p-4 rounded-lg shadow"
           >
-            <p>
-              <strong>Title:</strong>{" "}
-              {event.title}
-            </p>
+            <p><strong>Title:</strong> {event.title}</p>
 
-            <p>
-              <strong>Description:</strong>{" "}
-              {event.description}
-            </p>
+            <p><strong>Description:</strong> {event.description}</p>
 
             <p>
               <strong>Class:</strong>{" "}
-              {event.class?.name ||
-                "General Event"}
+              {event.class?.name || "General Event"}
             </p>
           </div>
         ))}

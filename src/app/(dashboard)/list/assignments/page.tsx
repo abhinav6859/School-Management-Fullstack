@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -10,6 +9,8 @@ export default function AssignmentsPage() {
   const [refresh, setRefresh] = useState(0);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
@@ -19,6 +20,12 @@ export default function AssignmentsPage() {
 
   // Check if user can create assignments (ADMIN and TEACHER)
   const canCreateAssignment = userRole === "ADMIN" || userRole === "TEACHER";
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setRefresh((prev) => prev + 1);
+  };
 
   // If still loading, show skeleton
   if (loading) {
@@ -87,13 +94,23 @@ export default function AssignmentsPage() {
         </div>
       )}
 
-      {/* Assignment List */}
-      <AssignmentList refresh={refresh} />
+      {/* Assignment List - Pass page prop */}
+      <AssignmentList 
+        refresh={refresh} 
+        page={currentPage}
+        onTotalPagesChange={setTotalPages}
+      />
 
-      {/* Pagination */}
-      <div className="mt-6">
-        <Pagination />
-      </div>
+      {/* Pagination - Only show if there are multiple pages */}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            page={currentPage}
+            count={totalPages}
+            
+          />
+        </div>
+      )}
     </div>
   );
 }

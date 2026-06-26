@@ -58,17 +58,27 @@ export default function SubjectList({
     }
   };
 
-  const fetchTeachers = async () => {
-    try {
-      const res = await fetch("/api/teachers");
-      const data = await res.json();
-      if (res.ok) {
-        setTeachers(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch teachers");
+ const fetchTeachers = async () => {
+  try {
+    const res = await fetch("/api/teachers");
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch teachers");
     }
-  };
+
+    const response = await res.json();
+
+    if (response.success && Array.isArray(response.data)) {
+      setTeachers(response.data);
+    } else {
+      setTeachers([]);
+      console.error("Invalid response:", response);
+    }
+  } catch (error) {
+    console.error("Failed to fetch teachers:", error);
+    setTeachers([]);
+  }
+};
 
   useEffect(() => {
     fetchSubjects();

@@ -6,11 +6,12 @@ import EventForm from "@/components/forms/EventForm";
 import EventList from "@/components/list/EventList";
 import Pagination from "@/components/Pagination";
 
-
 export default function EventsPage() {
   const [refresh, setRefresh] = useState(0);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     // Get role from localStorage
@@ -21,6 +22,12 @@ export default function EventsPage() {
 
   // Check if user can create events (ADMIN and TEACHER)
   const canCreateEvent = userRole === "ADMIN" || userRole === "TEACHER";
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    setRefresh((prev) => prev + 1);
+  };
 
   // If still loading, show skeleton
   if (loading) {
@@ -73,11 +80,23 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* Event List */}
-      <EventList refresh={refresh} />
+      {/* Event List - Pass page prop */}
+      <EventList 
+        refresh={refresh} 
+        page={currentPage}
+        onTotalPagesChange={setTotalPages}
+      />
 
-      {/* Optional: Add pagination if needed */}
-      <Pagination /> 
+      {/* Pagination - Only show if there are multiple pages */}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            page={currentPage}
+            count={totalPages}
+            
+          />
+        </div>
+      )}
     </div>
   );
 }

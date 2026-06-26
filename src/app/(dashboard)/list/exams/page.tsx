@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -11,9 +9,10 @@ export default function ExamsPage() {
   const [refresh, setRefresh] = useState(0);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    
     const role = localStorage.getItem("role");
     setUserRole(role);
     setLoading(false);
@@ -69,12 +68,21 @@ export default function ExamsPage() {
       )}
 
       {/* Exam List */}
-      <ExamList refresh={refresh} />
+      <ExamList 
+        refresh={refresh} 
+        page={currentPage}
+        onTotalPagesChange={setTotalPages}
+      />
 
-      {/* Pagination */}
-      <div className="mt-6">
-        <Pagination />
-      </div>
+      {/* Pagination - Only show if there are multiple pages */}
+      {totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination 
+            page={currentPage}
+            count={totalPages}
+          />
+        </div>
+      )}
     </div>
   );
 }

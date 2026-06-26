@@ -33,33 +33,28 @@ export default function SubjectForm({
     fetchTeachers();
   }, []);
 
+
   const fetchTeachers = async () => {
-    setIsLoadingTeachers(true);
-    try {
-      const res = await fetch("/api/teachers");
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
-      const response: ApiResponse = await res.json();
-      
-      // Check if the response is successful and has data
-      if (response.success && Array.isArray(response.data)) {
-        setTeachers(response.data);
-      } else {
-        console.error("Invalid response format:", response);
-        setTeachers([]);
-        toast.error("Invalid data format received");
-      }
-    } catch (error) {
-      console.error("Failed to fetch teachers:", error);
-      setTeachers([]);
-      toast.error("Failed to load teachers");
-    } finally {
-      setIsLoadingTeachers(false);
+  setIsLoadingTeachers(true);
+
+  try {
+    const res = await fetch("/api/teachers?all=true");
+
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
-  };
+
+    const data: Teacher[] = await res.json();
+
+    setTeachers(data);
+  } catch (error) {
+    console.error("Failed to fetch teachers:", error);
+    setTeachers([]);
+    toast.error("Failed to load teachers");
+  } finally {
+    setIsLoadingTeachers(false);
+  }
+};
 
   const handleTeacherChange = (teacherId: string) => {
     if (teacherIds.includes(teacherId)) {
