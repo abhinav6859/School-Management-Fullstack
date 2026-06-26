@@ -53,9 +53,16 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Add role to student and parent
-    const studentsWithRole = students.map(s => ({ ...s, role: "STUDENT" }));
-    const parentsWithRole = parents.map(p => ({ ...p, role: "PARENT" }));
 
+const studentsWithRole = students.map((s: any) => ({
+  ...s,
+  role: "STUDENT",
+}));
+
+const parentsWithRole = parents.map((p: any) => ({
+  ...p,
+  role: "PARENT",
+}));
     const allUsers = [...admins, ...teachers, ...studentsWithRole, ...parentsWithRole];
     
     // Sort by createdAt descending
