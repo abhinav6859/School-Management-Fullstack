@@ -1,20 +1,20 @@
 // components/list/TeacherList.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Pagination from "../Pagination";
 import Table from "../Table";
 import Link from "next/link";
 import FormModal from "@/components/FormModal";
-import { Class } from "@prisma/client";
-import { Subject } from "@prisma/client";
+import { Class, Subject } from "@prisma/client";
 import TableSearch from "@/components/TableSearch";
 import Image from "next/image";
 import { role } from "@/lib/data";
 import { useToast } from "@/components/ToastProvider";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 
+// Type definitions
 interface Teacher {
   id: string;
   username: string;
@@ -33,7 +33,14 @@ type TeacherListType = Teacher & {
   supervisedClasses?: Class[];
 };
 
-const columns = [
+// Column configuration with proper typing
+interface Column {
+  header: string;
+  accessor: string;
+  className?: string;
+}
+
+const columns: Column[] = [
   {
     header: "Info",
     accessor: "info",
@@ -70,6 +77,7 @@ const columns = [
   },
 ];
 
+// Render row function with proper typing
 const renderRow = (item: TeacherListType) => (
   <tr
     key={item.id}
@@ -180,8 +188,9 @@ const renderRow = (item: TeacherListType) => (
       <div className="flex items-center justify-center gap-2">
         <Link href={`/list/teachers/${item.id}`}>
           <button 
-          aria-label="View Teacher"
-          className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-purple-100 hover:scale-110 transition-all duration-200 group/btn">
+            aria-label="View Teacher"
+            className="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-50 hover:bg-purple-100 hover:scale-110 transition-all duration-200 group/btn"
+          >
             <svg className="w-4 h-4 text-gray-600 group-hover/btn:text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -204,27 +213,29 @@ const renderRow = (item: TeacherListType) => (
   </tr>
 );
 
-export default function TeacherList({
-  refresh,
-}: {
+// Main component with proper typing
+interface TeacherListProps {
   refresh: number;
-}) {
+}
+
+export default function TeacherList({ refresh }: TeacherListProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [teachers, setTeachers] = useState<TeacherListType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
   const { showToast } = useToast();
-
-  // Get page from URL or default to 1
-  const page = parseInt(searchParams.get("page") || "1");
   
-  // State for search
-  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  // State management
+  const [teachers, setTeachers] = useState<TeacherListType[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>("");
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const fetchTeachers = async (pageNum: number, search: string = "") => {
+  // Get page from URL
+  const page = parseInt(searchParams.get("page") || "1");
+
+  // Fetch teachers function with proper typing
+  const fetchTeachers = useCallback(async (pageNum: number, search: string = "") => {
     try {
       setLoading(true);
       setError("");
@@ -241,9 +252,9 @@ export default function TeacherList({
       const result = await response.json();
 
       if (response.ok && result.success) {
-        setTeachers(result.data);
-        setTotalCount(result.totalCount);
-        setCurrentPage(result.currentPage);
+        setTeachers(result.data || []);
+        setTotalCount(result.totalCount || 0);
+        setCurrentPage(result.currentPage || 1);
       } else {
         const errorMessage = result.message || "Failed to fetch teachers";
         setError(errorMessage);
@@ -252,7 +263,7 @@ export default function TeacherList({
         }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching teachers:", err);
       const errorMessage = "Unable to connect to the server";
       setError(errorMessage);
       if (refresh > 0) {
@@ -261,14 +272,14 @@ export default function TeacherList({
     } finally {
       setLoading(false);
     }
-  };
+  }, [refresh, showToast]);
 
   // Handle search
-  const handleSearch = (search: string) => {
+  const handleSearch = useCallback((search: string) => {
     setSearchTerm(search);
     
     // Update URL with search param and reset to page 1
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     if (search) {
       params.set("search", search);
     } else {
@@ -276,7 +287,7 @@ export default function TeacherList({
     }
     params.set("page", "1");
     router.push(`${window.location.pathname}?${params.toString()}`);
-  };
+  }, [router, searchParams]);
 
   // Initial load and when URL params change
   useEffect(() => {
@@ -288,7 +299,7 @@ export default function TeacherList({
     }
     
     fetchTeachers(urlPage, urlSearch);
-  }, [page, refresh, searchParams]);
+  }, [page, refresh, searchParams, fetchTeachers, searchTerm]);
 
   // Listen for teacher creation/update/deletion events from FormModal
   useEffect(() => {
@@ -308,12 +319,14 @@ export default function TeacherList({
       window.removeEventListener("teacherUpdated", handleTeacherUpdate);
       window.removeEventListener("teacherDeleted", handleTeacherUpdate);
     };
-  }, [searchParams]);
+  }, [searchParams, fetchTeachers, showToast]);
 
+  // Calculate pagination values
   const totalPages = Math.ceil(totalCount / ITEM_PER_PAGE);
   const startItem = totalCount === 0 ? 0 : (currentPage - 1) * ITEM_PER_PAGE + 1;
   const endItem = Math.min(currentPage * ITEM_PER_PAGE, totalCount);
 
+  // Loading state
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12">
@@ -330,21 +343,21 @@ export default function TeacherList({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       {/* Header Section */}
-      <div className="px-6 py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
               Teachers List
-              <div className="inline-block ml-3 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 rounded-full">
+              <span className="inline-block ml-2 sm:ml-3 px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-purple-50 to-blue-50 text-purple-700 rounded-full">
                 {totalCount} Total
-              </div>
+              </span>
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
               Manage and view all teaching staff
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <TableSearch onSearch={handleSearch} initialValue={searchTerm} />
             {role === "admin" && (
               <FormModal
@@ -356,7 +369,7 @@ export default function TeacherList({
                   fetchTeachers(urlPage, urlSearch);
                   showToast("New teacher added successfully", "success");
                 }}
-                onError={(errorMsg) => {
+                onError={(errorMsg: string) => {
                   showToast(errorMsg || "Failed to add teacher", "error");
                 }}
               />
@@ -408,20 +421,19 @@ export default function TeacherList({
           </div>
 
           {/* Pagination Info and Controls */}
-          <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="text-sm text-gray-500">
+          <div className="px-4 sm:px-6 py-4 border-t border-gray-100 bg-gray-50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
                 Showing <span className="font-semibold text-gray-700">{startItem}</span> to{' '}
                 <span className="font-semibold text-gray-700">{endItem}</span> of{' '}
                 <span className="font-semibold text-gray-700">{totalCount}</span> teachers
                 {searchTerm && (
-                  <span className="ml-2 text-purple-600">
-                    (filtered by:  &quot;{searchTerm}&quot;)
+                  <span className="block sm:inline ml-0 sm:ml-2 text-purple-600">
+                    (filtered by: &quot;{searchTerm}&quot;)
                   </span>
                 )}
               </div>
               
-              {/* Use your existing Pagination component */}
               <Pagination 
                 page={currentPage} 
                 count={totalCount}

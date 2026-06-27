@@ -16,8 +16,6 @@ export default function DashboardLayout({
 
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<Role>("admin");
-
-  // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -33,7 +31,6 @@ export default function DashboardLayout({
     setLoading(false);
   }, [router]);
 
-  // Close sidebar on resize to desktop
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
@@ -48,15 +45,13 @@ export default function DashboardLayout({
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-lg font-semibold">
-          Loading...
-        </div>
+        <div className="text-lg font-semibold">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen bg-[#F7F8FA] overflow-x-hidden">
       {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
@@ -73,14 +68,14 @@ export default function DashboardLayout({
       />
 
       {/* Main */}
-      <div className="lg:ml-64 min-h-screen flex flex-col">
+      <div className="lg:ml-64 min-h-screen flex flex-col w-full">
         <Navbar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full max-w-full overflow-x-hidden">
+          <div className="w-full max-w-7xl mx-auto">
             {children}
           </div>
         </main>
