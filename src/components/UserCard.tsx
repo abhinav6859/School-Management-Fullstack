@@ -84,15 +84,7 @@ const UserCard = ({ type }: UserCardProps) => {
     return colors[type.toLowerCase()] || "from-gray-500 to-gray-600";
   };
 
-  const getIcon = () => {
-    const icons: Record<string, string> = {
-      student: "/students.png",
-      teacher: "/teacher.png",
-      parent: "/parents.png",
-      admin: "/admin.png",
-    };
-    return icons[type.toLowerCase()] || "/more.png";
-  };
+
 
   const getLabel = () => {
     const labels: Record<string, string> = {
@@ -124,13 +116,7 @@ const UserCard = ({ type }: UserCardProps) => {
           {year}
         </span>
         <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-          <Image 
-            src={getIcon()} 
-            alt={type} 
-            width={16} 
-            height={16} 
-            className="opacity-90"
-          />
+      
         </div>
       </div>
       <h1 className="text-2xl font-semibold my-2">

@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import UserCard from "@/components/UserCard";
 import CountChart from "@/components/CountChart";
 import AttendanceChart from "@/components/AttendanceChart";
-import FinanceChart from "@/components/FinanceChart";
 import EventCalendar from "@/components/EventCalendar";
 import Announcements from "@/components/Announcements";
 
@@ -60,6 +59,7 @@ export default function AdminPage() {
           <UserCard type="student" />
           <UserCard type="teacher" />
           <UserCard type="parent" />
+          <UserCard type="admin" />
           
         </div>
         {/* MIDDLE CHARTS */}
@@ -73,10 +73,7 @@ export default function AdminPage() {
             <AttendanceChart />
           </div>
         </div>
-        {/* BOTTOM CHART */}
-        <div className="w-full h-[500px]">
-          <FinanceChart />
-        </div>
+       
       </div>
       {/* RIGHT */}
       <div className="calendar-wrapper w-full lg:w-1/3 flex flex-col gap-8">

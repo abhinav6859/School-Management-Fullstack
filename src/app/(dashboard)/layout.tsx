@@ -61,6 +61,7 @@ export default function DashboardLayout({
       )}
 
       {/* Sidebar */}
+      <div className="flex">
       <Menu
         role={role}
         sidebarOpen={sidebarOpen}
@@ -68,18 +69,19 @@ export default function DashboardLayout({
       />
 
       {/* Main */}
-      <div className="lg:ml-64 min-h-screen flex flex-col w-full">
+      <div className="flex-1 min-h-screen flex flex-col lg:ml-64">
         <Navbar
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
         />
 
-        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 w-full max-w-full overflow-x-hidden">
-          <div className="w-full max-w-7xl mx-auto">
-            {children}
-          </div>
-        </main>
+        <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8">
+         <div className="max-w-7xl mx-auto">
+        {children}
       </div>
+    </main>
+  </div>
+</div>
     </div>
   );
 }

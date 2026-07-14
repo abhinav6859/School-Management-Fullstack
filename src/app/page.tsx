@@ -36,10 +36,10 @@ export default function HomePage() {
   }, []);
 
   const stats = [
-    { label: 'Students', value: '2,500+', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { label: 'Teachers', value: '180+', icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Courses', value: '120+', icon: BookOpen, color: 'text-violet-600', bg: 'bg-violet-50' },
-    { label: 'Events', value: '50+', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'Students', value: '50+', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Teachers', value: '50+', icon: GraduationCap, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'Courses', value: '20+', icon: BookOpen, color: 'text-violet-600', bg: 'bg-violet-50' },
+    { label: 'Events', value: '10+', icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
   ];
 
   const features = [
@@ -650,4 +650,3 @@ export default function HomePage() {
   );
 }
 
-//postgres://aed5cefb5701a250cc62b454ae956c793aca4f8c83cdc49956a156d668f7cc34:sk_k_e1tlRjge_10HdPhJh5W@db.prisma.io:5432/postgres?sslmode=require
