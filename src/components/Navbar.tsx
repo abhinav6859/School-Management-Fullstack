@@ -47,7 +47,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
       setUserName(emailName);
     }
 
-    // Close profile menu on click outside
+  
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       if (!target.closest('.profile-menu-container')) {
@@ -110,9 +110,9 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
     <div className="sticky top-0 z-40">
       <div className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200">
         
-        {/* Left Section - Hamburger & Logo */}
+       
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Hamburger Menu Button */}
+        
           {setSidebarOpen && (
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -125,7 +125,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
             </button>
           )}
 
-          {/* Mobile Logo */}
+           {/* Mobile Logo  */}
           <div className="lg:hidden flex items-center">
             <span className="font-bold text-lg sm:text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
               SchooLama
@@ -154,7 +154,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           
-          {/* User Info - Hidden on very small screens */}
+         
           <div className="hidden sm:flex flex-col text-right">
             <span className="text-xs sm:text-sm font-semibold text-gray-700 truncate max-w-[80px] sm:max-w-[120px]">
               {userName}
@@ -164,7 +164,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
             </span>
           </div>
 
-          {/* Avatar with Dropdown */}
+       
           <div className="relative profile-menu-container">
             <button
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
@@ -181,11 +181,11 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
                   {getInitials()}
                 </div>
 
-                {/* Online dot - Hidden on very small screens */}
+               
                 <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-500 border-2 border-white rounded-full"></div>
               </div>
 
-              {/* Chevron - Hidden on very small screens */}
+             
               <svg className={`
                 hidden sm:block w-3 h-3 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200
                 ${isProfileMenuOpen ? 'rotate-180' : ''}
@@ -194,10 +194,10 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
               </svg>
             </button>
 
-            {/* Dropdown Menu */}
+
             {isProfileMenuOpen && (
               <div className="absolute right-0 mt-2 w-56 sm:w-64 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden animate-slideDown">
-                {/* User Info Header */}
+               
                 <div className="px-4 py-3 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-gray-100">
                   <div className="flex items-center gap-3">
                     <div className={`
@@ -243,7 +243,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
         </div>
       </div>
 
-      {/* Styles for animations */}
+   
       <style jsx>{`
         @keyframes slideDown {
           from {

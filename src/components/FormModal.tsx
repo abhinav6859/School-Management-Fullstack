@@ -265,12 +265,12 @@ export default function FormModal({
         </button>
       )}
 
-      {/* CUSTOM TRIGGER */}
+    
       {!hideTrigger && trigger && (
         <div onClick={() => setOpen(true)}>{trigger}</div>
       )}
 
-      {/* MODAL OVERLAY */}
+    
       {open && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center backdrop-blur-sm"

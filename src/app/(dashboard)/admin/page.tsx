@@ -52,9 +52,9 @@ export default function AdminPage() {
 
   return (
   <div className="flex flex-col lg:flex-row gap-6 p-4 md:p-6">
-      {/* LEFT */}
+     
       <div className="w-full lg:w-2/3 flex flex-col gap-8">
-        {/* USER CARDS */}
+        
        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"> 
           <UserCard type="student" />
           <UserCard type="teacher" />
@@ -62,20 +62,20 @@ export default function AdminPage() {
           <UserCard type="admin" />
           
         </div>
-        {/* MIDDLE CHARTS */}
+     
         <div className="flex gap-4 flex-col lg:flex-row">
-          {/* COUNT CHART */}
+         
           <div className="w-full lg:w-1/3 h-[450px]">
             <CountChart />
           </div>
-          {/* ATTENDANCE CHART */}
+         
           <div className="w-full lg:w-2/3 h-[450px]">
             <AttendanceChart />
           </div>
         </div>
        
       </div>
-      {/* RIGHT */}
+      
       <div className="calendar-wrapper w-full lg:w-1/3 flex flex-col gap-8">
         <EventCalendar />
         <Announcements />
