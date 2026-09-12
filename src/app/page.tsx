@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useUser } from "@/components/UserProvider";
 import { 
   GraduationCap, 
   Users, 
@@ -24,12 +25,19 @@ import {
   TrendingUp
 } from 'lucide-react';
 
-export default function HomePage() {
+
+export default  function HomePage() {
+   const user = useUser();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeRole, setActiveRole] = useState<'admin' | 'teacher' | 'student' | 'parent'>('admin');
+  const userName = user?.username || "User";
+  const userRole = user?.role || "";
 
   useEffect(() => {
+ 
+
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -177,16 +185,28 @@ export default function HomePage() {
               className={`p-2 rounded-lg transition-colors ${isScrolled ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-white/10 text-white'}`}>
                 <Bell className="w-5 h-5" />
               </button>
-              <Link
-                href="/sign-in"
-                className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-                  isScrolled
-                    ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20'
-                    : 'bg-white text-indigo-600 hover:bg-indigo-50'
-                }`}
-              >
-                Sign In
-              </Link>
+         {!userRole ? (
+  <Link
+    href="/sign-in"
+    className={`px-5 py-2.5 rounded-lg text-sm font-semibold transition-all ${
+      isScrolled
+        ? "bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-600/20"
+        : "bg-white text-indigo-600 hover:bg-indigo-50"
+    }`}
+  >
+    Sign In
+  </Link>
+) : (
+  <div className="hidden sm:flex flex-col text-right">
+    <span className="text-sm sm:text-base font-semibold text-white truncate max-w-[80px] sm:max-w-[120px]">
+      {userName}
+    </span>
+
+    <span className="text-[10px] sm:text-sm text-white/70 uppercase tracking-wider">
+      {userRole || "User"}
+    </span>
+  </div>
+)}
             </div>
 
             <button
@@ -233,10 +253,6 @@ export default function HomePage() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl" />
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium mb-8">
-            <Zap className="w-4 h-4" />
-            <span>v2.0 Now with advanced analytics</span>
-          </div>
           
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white tracking-tight mb-6 leading-tight">
             School Management
@@ -258,12 +274,6 @@ export default function HomePage() {
             >
               Access Dashboard
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/sign-in"
-              className="flex items-center gap-2 px-8 py-4 bg-white/5 text-white border border-white/10 rounded-xl font-semibold hover:bg-white/10 transition-all backdrop-blur-sm"
-            >
-              Sign In
             </Link>
           </div>
 

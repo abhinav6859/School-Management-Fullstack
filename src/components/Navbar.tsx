@@ -45,7 +45,7 @@ const Navbar = ({ role, sidebarOpen, setSidebarOpen }: NavbarProps) => {
     if (!storedName && storedEmail) {
       const emailName = storedEmail.split('@')[0];
       setUserName(emailName);
-    }
+    } 
 
   
     const handleClickOutside = (e: MouseEvent) => {

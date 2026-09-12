@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const page = parseInt(searchParams.get("page") || "1");
     const search = searchParams.get("search") || "";
-    const all = searchParams.get("all") === "true"; // Add this
+    const all = searchParams.get("all") === "true"; 
     
     
  
@@ -243,6 +243,7 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

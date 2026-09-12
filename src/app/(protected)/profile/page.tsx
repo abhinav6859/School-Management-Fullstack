@@ -172,7 +172,7 @@ function ProfileContent() {
 
   const canEdit = !profile?.isAdminView && profile?.role !== "ADMIN";
 
-  // 🚀 SPEED OPTIMIZATION: Show cached data immediately if available
+ 
   if (loading) {
     const cachedProfile = localStorage.getItem("cachedProfile");
     if (cachedProfile && !userId) {

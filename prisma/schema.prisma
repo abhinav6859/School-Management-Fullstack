@@ -56,6 +56,7 @@ model Student {
   address     String?
   bloodType   String
   sex         UserSex
+   role        Role     @default(STUDENT)
   birthday    DateTime
   parentId    String
   bio          String?
@@ -81,6 +82,7 @@ model Parent {
   password  String
   phone     String
   bio          String?
+   role        Role     @default(PARENT)
   socialLinks  Json?
   address   String?
   createdAt DateTime  @default(now())

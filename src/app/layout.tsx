@@ -2,6 +2,8 @@ import type { Metadata , Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+import { getCurrentUser } from "@/lib/auth";
+import { UserProvider } from "@/components/UserProvider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,15 +20,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+   const user = await getCurrentUser();
+
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+         <UserProvider user={user}>
+      {children}
+    </UserProvider>
+    </ToastProvider>
       </body>
     </html>
   );
