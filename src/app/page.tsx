@@ -27,6 +27,19 @@ import {
 
 
 export default  function HomePage() {
+const [res1, setRes1] = useState("");
+
+useEffect(() => {
+  async function getUser() {
+    const res = await fetch("/api/auth/me");
+
+    const data = await res.json();
+
+    setRes1(data.hello);
+  }
+
+  getUser();
+}, []);
    const user = useUser();
 
   const [isScrolled, setIsScrolled] = useState(false);
@@ -34,6 +47,7 @@ export default  function HomePage() {
   const [activeRole, setActiveRole] = useState<'admin' | 'teacher' | 'student' | 'parent'>('admin');
   const userName = user?.username || "User";
   const userRole = user?.role || "";
+  
 
   useEffect(() => {
  
@@ -199,7 +213,7 @@ export default  function HomePage() {
 ) : (
   <div className="hidden sm:flex flex-col text-right">
     <span className="text-sm sm:text-base font-semibold text-white truncate max-w-[80px] sm:max-w-[120px]">
-      {userName}
+      {userName} {res1}
     </span>
 
     <span className="text-[10px] sm:text-sm text-white/70 uppercase tracking-wider">

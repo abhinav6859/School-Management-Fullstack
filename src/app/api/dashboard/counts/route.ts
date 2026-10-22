@@ -7,7 +7,7 @@ export async function GET(req: Request) {
   try {
     await authorize(req, ["ADMIN", "TEACHER", "STUDENT", "PARENT"]);
     
-    // 🚀 Get all counts in parallel using count()
+    //  Get all counts  using count()
     const [students, teachers, parents, admins] = await Promise.all([
       prisma.student.count(),
       prisma.teacher.count(),
